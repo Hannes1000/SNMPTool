@@ -19,7 +19,6 @@ public class Test {
     public static final int mSNMPVersion =0; // 0 represents SNMPController version=1
 
     public static final String OID_UPS_OUTLET_GROUP1 =
-
             "1.3.6.1.4.1.318.1.1.1.12.3.2.1.3.1";
 
     public static final String OID_SYS_DESCR="1.3.6.1.2.1.1.1.0";
