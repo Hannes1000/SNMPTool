@@ -24,13 +24,9 @@ public class Test {
     public static final String OID_SYS_DESCR="1.3.6.1.2.1.1.1.0";
 
     public static void main(String[] args)
-
     {
-
         try
-
         {
-
             String strIPAddress = "127.0.0.1";
 
             Test objSNMP = new Test();
@@ -47,35 +43,15 @@ public class Test {
 
             int Value = 2;
 
-            //objSNMP.snmpSet(strIPAddress, WRITE_COMMUNITY,OID_UPS_OUTLET_GROUP1, Value);
 
-            //////////////////////////////////////////////////////////
-
-            //Get Basic state of UPS
-
-            /////////////////////////////////////////////////////////
-
-            String batteryCap =objSNMP.snmpGet(strIPAddress,READ_COMMUNITY,OID_SYS_DESCR);
-
+            String batteryCap = objSNMP.snmpGet(strIPAddress,READ_COMMUNITY,OID_SYS_DESCR);
         }
-
         catch (Exception e)
-
         {
-
             e.printStackTrace();
-
         }
 
     }
-
-    /*
-
-     * The following code valid only SNMPController version1. This
-
-     * method is very useful to set a parameter on remote device.
-
-     */
 
     public void snmpSet(String strAddress, String community, String strOID, int Value)
     {
@@ -132,12 +108,6 @@ public class Test {
 
     }
 
-    /*
-     * The code is valid only SNMPController version1. SnmpGet method
-
-     * return Response for given OID from the Device.
-
-     */
 
     public String snmpGet(String strAddress, String community, String strOID)
     {

@@ -58,7 +58,7 @@ public class Main {
                     }
                     break;
                 default:
-                    output = "Unknown Command:\nType help to see all Commands.\n";
+                    output = "Unknown Command:\nType [help] to see all Commands.\n";
                     break;
             }
             System.out.println(output);
