@@ -53,6 +53,7 @@ public class SNMPController {
 
     }
 
+
     public String snmpGet(String strAddress, String community, String strOID)
     {
         String str="";
@@ -91,15 +92,12 @@ public class SNMPController {
                 {
                     PDU pduresponse=response.getResponse();
                     str=pduresponse.getVariableBindings().firstElement().toString();
-
                     if(str.contains("="))
                     {
                         int len = str.indexOf("=");
                         str=str.substring(len+1, str.length());
                     }
-
                 }
-
             }
             else
             {
