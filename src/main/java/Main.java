@@ -1,7 +1,4 @@
-package main;
-
 import jdk.nashorn.internal.objects.annotations.Getter;
-import test.Test;
 
 import javax.sound.midi.Soundbank;
 import java.util.Scanner;
