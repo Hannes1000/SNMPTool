@@ -16,7 +16,7 @@ public class Test {
 
     public static final String WRITE_COMMUNITY= "private";
 
-    public static final int mSNMPVersion =0; // 0 represents SNMP version=1
+    public static final int mSNMPVersion =0; // 0 represents SNMPController version=1
 
     public static final String OID_UPS_OUTLET_GROUP1 =
 
@@ -72,7 +72,7 @@ public class Test {
 
     /*
 
-     * The following code valid only SNMP version1. This
+     * The following code valid only SNMPController version1. This
 
      * method is very useful to set a parameter on remote device.
 
@@ -134,7 +134,7 @@ public class Test {
     }
 
     /*
-     * The code is valid only SNMP version1. SnmpGet method
+     * The code is valid only SNMPController version1. SnmpGet method
 
      * return Response for given OID from the Device.
 
