@@ -18,7 +18,7 @@ im File "build.gradle" (SNMP4j) angegeben sind (wenn es nicht automatisch passie
 • Eine IP-Adresse mittels SNMP abfragen✔
 
 • von der gescannten Adresse mindestens 6 verschiedene Informationen aus-
-lesen
+lesen✔
 
 • Von einer bestimmten IP-Adresse mittels OID Informationen auslesen✔
 
@@ -36,4 +36,4 @@ blic und private als String verwenden✔
 • Ein ganzes Netzwerk per SNMP scannen
 
 • Simples User Inferface zum Anzeigen von Informationen (kann auch Kon-
-solen basiert sein)
+solen basiert sein)✔
