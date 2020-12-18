@@ -12,7 +12,8 @@ im File "build.gradle" (SNMP4j) angegeben sind (wenn es nicht automatisch passie
 
 # Ausführen des Programms ohne Intellij:
 - Benötigt wird ein Text-Editor (z.B.: https://notepad-plus-plus.org/downloads) und eine installierte Java-SDK (https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
-
+- mit der CMD zum .jar File (SNMP Tool\out\artifacts\SNMPTool_jar) navigieren
+- den Befehl: "java -jar <Name des Files>.jar" eingeben und das Programm wird ausgeführt 
 
 # Mindestanforderungen
 • Eine IP-Adresse mittels SNMP abfragen✔
