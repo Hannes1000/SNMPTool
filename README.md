@@ -11,7 +11,7 @@ SNMP Tool für System und Netzwerke zum auslesen von Informationen von verschied
 im File "build.gradle" (SNMP4j) angegeben sind (wenn es nicht automatisch passiert kann man dies mit "gradle build" machen). Anschließend die Main.java ausführen.
 
 # Ausführen des Programms ohne Intellij:
-- Benötigt wird ein Text-Editor (z.B.: https://notepad-plus-plus.org/downloads) und eine installierte Java-SDK (https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
+- Benötigt wird eine installierte Java-SDK (https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
 - mit der CMD zum .jar File (SNMP Tool\out\artifacts\SNMPTool_jar) navigieren
 - den Befehl: "java -jar <Name des Files>.jar" eingeben und das Programm wird ausgeführt 
 
