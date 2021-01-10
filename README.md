@@ -4,7 +4,7 @@ SNMP Tool für System und Netzwerke zum auslesen von Informationen von verschied
 # Anfroderunge zum Ausführen des Tools:
 - java 8 (empfohlen) oder höher
 
-# Ausführen des Programms mit CMD:
+# Ausführen des Programms:
 - Console öffnen
 - zum .jar File Navigieren (unter: "out/artifacts/SNMP_Tool_jar/")
 - mit dem Befehl: "java -jar <Name des Jar-Files>.jar" das Programm ausführen
