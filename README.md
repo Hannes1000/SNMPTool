@@ -3,17 +3,15 @@ SNMP Tool für System und Netzwerke zum auslesen von Informationen von verschied
 
 # Anfroderunge zum Ausführen des Tools:
 - java 8 (empfohlen) oder höher
-- Gradle oder SNMP4j library bereits installiert
-- Intellij IDEA (empfohlen)
 
-# Ausführen des Programms mit Intellij:
-- "File>Open" und das Projekt auswählen, wenn Gradle installiert ist lädt es automatisch die Libraries herunter die 
-im File "build.gradle" (SNMP4j) angegeben sind (wenn es nicht automatisch passiert kann man dies mit "gradle build" machen). Anschließend die Main.java ausführen.
-
-# Ausführen des Programms ohne Intellij:
-- Benötigt wird eine installierte Java-SDK (https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
-- mit der CMD zum .jar File (SNMP Tool\out\artifacts\SNMPTool_jar) navigieren
-- den Befehl: "java -jar <Name des Files>.jar" eingeben und das Programm wird ausgeführt 
+# Ausführen des Programms mit CMD:
+- Console öffnen
+- zum .jar File Navigieren (unter: "out/artifacts/SNMP_Tool_jar/")
+- mit dem Befehl: "java -jar <Name des Jar-Files>.jar" das Programm ausführen
+  
+# Mögliche Fehler beim Ausführen:
+- Java bei Windows zu PATH hinzufügen
+- Name des .jar Files in "" setzen (z.B.: java -jar "SNMP Tool.jar"
 
 # Mindestanforderungen
 • Eine IP-Adresse mittels SNMP abfragen✔
