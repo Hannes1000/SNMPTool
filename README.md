@@ -7,7 +7,7 @@ SNMP Tool für System und Netzwerke zum auslesen von Informationen von verschied
 # Ausführen des Programms:
 - Console öffnen
 - zum .jar File Navigieren (unter: "out/artifacts/SNMP_Tool_jar/")
-- mit dem Befehl: "java -jar <Name des Jar-Files>.jar" das Programm ausführen
+- mit dem Befehl: "java -jar [Name des Jar-Files].jar" das Programm ausführen
   
 # Mögliche Fehler beim Ausführen:
 - Java bei Windows zu PATH hinzufügen
