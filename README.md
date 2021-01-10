@@ -11,7 +11,7 @@ SNMP Tool für System und Netzwerke zum auslesen von Informationen von verschied
   
 # Mögliche Fehler beim Ausführen:
 - Java bei Windows zu PATH hinzufügen
-- Name des .jar Files in "" setzen (z.B.: java -jar "SNMP Tool.jar"
+- Name des .jar Files in "" setzen (z.B.: java -jar "SNMP Tool.jar")
 
 # Mindestanforderungen
 • Eine IP-Adresse mittels SNMP abfragen✔
