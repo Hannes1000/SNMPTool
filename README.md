@@ -4,18 +4,9 @@ SNMP Tool für System und Netzwerke zum auslesen von Informationen von verschied
 # Anfroderunge zum Ausführen des Tools:
 - java 8 (empfohlen) oder höher
 
-# Ausführen des Programms mit CMD:
-- Console öffnen
-- zum .jar File Navigieren (unter: "out/artifacts/SNMP_Tool_jar/")
-- mit dem Befehl: "java -jar [Name des Jar-Files].jar" das Programm ausführen
-
 # Ausführen des Programmes:
 - am einfachsten ist es das Projekt in IntellijIDEA zu Importieren und Auszuführen
 - ansonsten muss es über die CMD gestarted werden
-  
-# Mögliche Fehler beim Ausführen:
-- Java bei Windows zu PATH hinzufügen
-- Name des .jar Files in "" setzen (z.B.: java -jar "SNMP Tool.jar")
 
 # Mindestanforderungen
 • Eine IP-Adresse mittels SNMP abfragen✔
