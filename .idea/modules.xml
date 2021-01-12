@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SNMP_Tool.iml" filepath="$PROJECT_DIR$/.idea/modules/SNMP_Tool.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SNMP_Tool.main.iml" filepath="$PROJECT_DIR$/.idea/modules/SNMP_Tool.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SNMP_Tool.test.iml" filepath="$PROJECT_DIR$/.idea/modules/SNMP_Tool.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/SNMP Tool.iml" filepath="$PROJECT_DIR$/.idea/SNMP Tool.iml" />
     </modules>
   </component>
 </project>

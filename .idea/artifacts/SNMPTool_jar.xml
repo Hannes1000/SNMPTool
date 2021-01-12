@@ -2,14 +2,9 @@
   <artifact type="jar" name="SNMPTool:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/SNMPTool_jar</output-path>
     <root id="archive" name="SNMP Tool.jar">
-      <element id="module-output" name="SNMP_Tool" />
-      <element id="module-output" name="SNMP_Tool.main" />
-      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.opentest4j/opentest4j/1.2.0/28c11eb91f9b6d8e200631d46e20a7f407f2a046/opentest4j-1.2.0.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-api/5.6.0/f29e6318333d2303ce4965c9819cfad08de7d1e5/junit-jupiter-api-5.6.0.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.snmp4j/snmp4j/2.8.6/944b3c27890dc2a698a488e09778fc1505bd2a1e/snmp4j-2.8.6.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.apiguardian/apiguardian-api/1.1.0/fc9dff4bb36d627bdc553de77e1f17efd790876c/apiguardian-api-1.1.0.jar" path-in-jar="/" />
-      <element id="library" level="project" name="Gradle: org.junit.jupiter:junit-jupiter-engine:" />
-      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-commons/1.6.0/b0a75795cf03841d4f9cc54099557baffc11c727/junit-platform-commons-1.6.0.jar" path-in-jar="/" />
+      <element id="module-output" name="SNMP Tool" />
+      <element id="extracted-dir" path="D:/Apps/snmp4j-2.8.6-distribution/snmp4j-2.8.6/dist/snmp4j-2.8.6.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/net/percederberg/mibble/mibble/2.9.3/mibble-2.9.3.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.Controller">
+   <children>
+    <AnchorPane layoutX="180.0" layoutY="-151.0" minHeight="0.0" minWidth="0.0" prefHeight="375.0" prefWidth="209.0" />
+      <ScrollPane layoutX="51.0" layoutY="253.0" prefHeight="187.0" prefWidth="418.0">
+         <content>
+            <TextArea prefHeight="192.0" prefWidth="415.0" />
+         </content>
+      </ScrollPane>
+   </children>
+</AnchorPane>
