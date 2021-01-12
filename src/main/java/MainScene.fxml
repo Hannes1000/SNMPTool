@@ -3,14 +3,40 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.Controller">
    <children>
-    <AnchorPane layoutX="180.0" layoutY="-151.0" minHeight="0.0" minWidth="0.0" prefHeight="375.0" prefWidth="209.0" />
-      <ScrollPane layoutX="51.0" layoutY="253.0" prefHeight="187.0" prefWidth="418.0">
-         <content>
-            <TextArea prefHeight="192.0" prefWidth="415.0" />
-         </content>
-      </ScrollPane>
+      <TextArea fx:id="consoletxt" editable="false" layoutX="1.0" layoutY="251.0" prefHeight="193.0" prefWidth="611.0" />
+      <Label alignment="CENTER" layoutX="201.0" layoutY="234.0" prefHeight="17.0" prefWidth="200.0" text="Console" textAlignment="CENTER" />
+      <MenuBar layoutY="2.0" prefHeight="25.0" prefWidth="600.0">
+        <menus>
+          <Menu mnemonicParsing="false" onAction="#helpEnter" text="Help">
+               <items>
+                  <Menu mnemonicParsing="false" text="Lists All Commands" />
+               </items></Menu>
+          <Menu mnemonicParsing="false" onAction="#getEnter" text="Get">
+               <items>
+                  <MenuItem mnemonicParsing="false" text="Unspecified Action" />
+               </items></Menu>
+          <Menu mnemonicParsing="false" onAction="#setEnter" text="Set">
+               <items>
+                  <MenuItem mnemonicParsing="false" text="Set Value with OID" />
+               </items></Menu>
+            <Menu mnemonicParsing="false" onAction="#discoverEnter" text="Discover">
+               <items>
+                  <MenuItem mnemonicParsing="false" text="Scanns your whole Network" />
+               </items></Menu>
+            <Menu mnemonicParsing="false" onAction="#mibEnter" text="Mib">
+               <items>
+                  <MenuItem mnemonicParsing="false" text="Returns all available MIB-Files" />
+               </items></Menu>
+            <Menu mnemonicParsing="false" onAction="#showmibEnter" text="Showmib">
+               <items>
+                  <MenuItem mnemonicParsing="false" text="Outputs a MIB-File" />
+               </items></Menu>
+        </menus>
+      </MenuBar>
+      <TextField fx:id="consoleInput" layoutY="444.0" prefHeight="36.0" prefWidth="526.0" />
+      <Button layoutX="526.0" layoutY="444.0" mnemonicParsing="false" onAction="#consoleEnter" prefHeight="36.0" prefWidth="87.0" text="Enter" />
+      <HBox layoutX="10.0" layoutY="64.0" prefHeight="127.0" prefWidth="583.0" />
    </children>
 </AnchorPane>

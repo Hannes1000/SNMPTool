@@ -44,7 +44,6 @@ public class SNMP implements CommandResponder, ResponseListener {
     private ThreadPool threadPool;
 
     LinkedList<ResponseEvent> asyncResponseDeposit = new LinkedList<ResponseEvent>();
-    //HashMap<Integer32, ResponseEvent> asyncResponseDeposit = new HashMap<Integer32, ResponseEvent>();
 
     public SNMP() throws IOException {
         mibLoader = new MibLoader();
@@ -115,21 +114,6 @@ public class SNMP implements CommandResponder, ResponseListener {
         return pdu.getRequestID();
     }
 
-    /*public ResponseEvent getMultipleAsync() //for broadcast
-    {
-        CommunityTarget target = new CommunityTarget();
-        target.setCommunity(new OctetString(community));
-        target.setAddress(ip);
-        target.setVersion(version);
-
-        //snmp.
-        PDU pdu = new PDU();
-        pdu.setType(PDU.GET);
-        pdu.add(new VariableBinding(oid));
-
-        snmp.send(pdu, target, null, this);
-    }*/
-
     public void set(IpAddress ip, String community, int version, OID oid, Variable value) throws IOException {
         CommunityTarget target = new CommunityTarget();
         target.setAddress(ip);
@@ -141,21 +125,6 @@ public class SNMP implements CommandResponder, ResponseListener {
         pdu.add(new VariableBinding(oid, value));
 
         snmp.set(pdu, target);
-    }
-
-    public ResponseEvent getNext(IpAddress ip, String community, int version, OID oid) throws IOException
-    {
-        CommunityTarget target = new CommunityTarget();
-        target.setCommunity(new OctetString(community));
-        target.setAddress(ip);
-        target.setVersion(version);
-
-        //snmp.
-        PDU pdu = new PDU();
-        pdu.setType(PDU.GETNEXT);
-        pdu.add(new VariableBinding(oid));
-
-        return snmp.getNext(pdu, target);
     }
 
     public Integer32 getNextAsync(IpAddress ip, String community, int version, OID oid) throws IOException {
@@ -265,11 +234,6 @@ public class SNMP implements CommandResponder, ResponseListener {
         return ret;
     }
 
-    public Integer32 discoveryBroadcast(String community, int version) throws IOException
-    {
-        return getAsync(new UdpAddress(Inet4Address.getByName("255.255.255.255"), 161), community, version, new OID("1.3.6.1.2.1.1.5.0")); //OID for name
-    }
-
     public void close() throws IOException {
         snmp.close();
     }
@@ -303,8 +267,6 @@ public class SNMP implements CommandResponder, ResponseListener {
 
         return null;
     }
-
-    public void clearResponse() { this.asyncResponseDeposit = new LinkedList<ResponseEvent>(); }
 
     public OID getOidFromName(String name, String mibName) throws IOException, MibLoaderException {
         Mib mib = mibLoader.load(new File(EXTRA_MIB_DIRECTORY + "\\" + mibName));

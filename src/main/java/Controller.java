@@ -1,5 +1,8 @@
 package main.java;
 
+import javafx.fxml.FXML;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import net.percederberg.mibble.MibLoaderException;
 import net.percederberg.mibble.MibSymbol;
 import net.percederberg.mibble.MibValueSymbol;
@@ -11,14 +14,17 @@ import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.smi.*;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
-import sun.nio.cs.KOI8_U;
 
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Controller {
 
@@ -31,7 +37,7 @@ public class Controller {
 
     //*Programm Settings*//
     boolean programmrunning = true;
-    Main.Commands c = new Main.Commands();
+    String[] input;
     String[][] commands = {
             {"\nhelp"},
             {"\n\nget", "\t\t<IP-Address>", "\t<OID-Name>", "\n\t\t\t\t-v <Set Version> \n\t\t\t\t-port <Set Port> \n\t\t\t\t-c <Set Community> \n\t\t\t\t-n <Mib-File>"},
@@ -45,10 +51,101 @@ public class Controller {
         snmpController = SNMP.getInstance();
     }
 
+    //*FXML*//
+    @FXML
+    TextArea consoletxt;
+    @FXML
+    TextField consoleInput;
+
+
+    public void consoleEnter(){
+        input = consoleInput.getText().split(" ");
+        handleInput();
+    }
+
+    public void helpEnter(){
+
+    }
+
+    public void getEnter(){
+
+    }
+
+    public void setEnter(){
+
+    }
+
+    public void discoverEnter(){
+
+    }
+
+    public void mibEnter(){
+
+    }
+
+    public void showmibEnter(){
+
+    }
+
+    public void handleInput(){
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.execute(() -> {
+            String output = "";
+            switch (input[0]) {
+                case "help":
+                    output = "All Commands:\n";
+                    for (int i = 0; i < commands.length; i++) {
+                        for (int j = 0; j < commands[i].length; j++) {
+                            output += commands[i][j];
+                        }
+                    }
+                    break;
+                case "get":
+                    output += snmpGet(input[1], input);
+                    break;
+                case "set":
+                    output += snmpSet(input[1], input);
+                    break;
+                case "discover":
+                    output += snmpDiscover(input);
+                    break;
+                case "mib":
+                    int i=0;
+                    String[] tmp = snmpController.getMibFileNames();
+                    for(String str: tmp)
+                        output += i++ + ")\t" + str;
+                    break;
+                case "showmib":
+                    try {
+                        MibSymbol[] mibSymbols= snmpController.getMibSymbols(input[1]);
+                        for (MibSymbol v : mibSymbols)
+                        {
+                            if(v instanceof MibValueSymbol)
+                                output += "Name: " + v.getName() + "\t\tValue: " + ((MibValueSymbol)v).getValue();
+                            else
+                                output += "Name: " + v.getName() + "\t\tValue: NULL";
+                        }
+                    } catch (MibLoaderException | IOException e) {
+                        output += "can not find file specified.\nTry to use the command <mib> to show all available mib files";
+                    }
+                    break;
+                default:
+                    output = "Unknown Command:\nType <help> to see all Commands.\n";
+                    break;
+            }
+            consoletxt.setText(consoletxt.getText() + output);
+            consoleInput.setText("");
+        });
+    }
+
+
+    //*FXML*//
+
+
+
 
     public void startProgrammLoop() throws IOException {
         Scanner scanner = new Scanner(System.in);
-        String[] input;
         String output = "";
 
         System.out.println("SNMP Program started:\n" +
@@ -103,7 +200,7 @@ public class Controller {
     }
 
 
-    public void snmpDiscover(String[] commands){
+    public String snmpDiscover(String[] commands){
         int version = SnmpConstants.version1;
         int port = 161;
         String community = "public";
@@ -121,15 +218,13 @@ public class Controller {
                 } else if (commands[i].toLowerCase().compareTo("-s") == 0) {
                     timeout = Integer.parseInt(commands[i+1]) * 1000;
                 } else {
-                    System.out.println("invalid input");
-                    return;
+                    return "invalid input";
                 }
             }
         }
         catch(NullPointerException e)
         {
-            System.out.println("wrong input. Enter help to see the available commands and how to use them");
-            return;
+            return "wrong input. Enter help to see the available commands and how to use them";
         }
 
         //System.out.println("timeout" + timeout);
@@ -142,7 +237,9 @@ public class Controller {
 
         long finalTimeout = timeout;
         LinkedList<Integer32> finalDiscoveryId = discoveryId;
-        Runnable result = () -> {
+        ArrayList<String> str = new ArrayList<>();
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.execute(() -> {
             try {
                 Thread.sleep(finalTimeout);
             } catch (InterruptedException e) {
@@ -152,18 +249,18 @@ public class Controller {
             for(Integer32 tmp : finalDiscoveryId)
             {
                 ResponseEvent getResponse = snmpController.getResponse(tmp.toInt());
-                if(getResponse != null)
+                if(getResponse != null) {
+                    consoletxt.setText(consoletxt.getText() + "discovered " + getResponse.getPeerAddress().toString() + ": " + getResponse.getResponse().getVariableBindings().iterator().next().getVariable());
                     System.out.println("discovered " + getResponse.getPeerAddress().toString() + ": " + getResponse.getResponse().getVariableBindings().iterator().next().getVariable());
-
+                }
             }
 
-        };
-
-        new Thread(result).start();
+            });
+        return "";
     }
 
     //by oid directly
-    public void snmpGet(String strAddress, String community, String strOID)
+    public String snmpGet(String strAddress, String community, String strOID)
     {
         String str="";
         try
@@ -209,8 +306,7 @@ public class Controller {
             }
             else
             {
-                System.out.println("no response from " + strIPAddress + "\ntry to use the command \"discovery\" to see all Devices in your network");
-                return;
+                return "no response from " + strIPAddress + "\ntry to use the command \"discovery\" to see all Devices in your network";
             }
             snmp.close();
 
@@ -218,11 +314,11 @@ public class Controller {
             e.printStackTrace();
         }
 
-        System.out.println("response from " + strIPAddress + ": " + strOID + " ==> " + str);
+        return "response from " + strIPAddress + ": " + strOID + " ==> " + str;
     }
 
     //by reading oid from MIB-File
-    public void snmpGet(String ipAddress, String[] commands){
+    public String snmpGet(String ipAddress, String[] commands){
         InetAddress ip;
         int port = 161;
         String community = "public";
@@ -241,7 +337,7 @@ public class Controller {
                         //oid = snmp.getOidFromName(commands[2], "mibFiles\\ExtraMibs\\windows.mib");
                     } catch (MibLoaderException e) {
                         e.printStackTrace();
-                        return;
+                        return "Error while loading MIB-File";
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -259,8 +355,7 @@ public class Controller {
         }
         catch(NullPointerException | UnknownHostException e)
         {
-            System.out.println("wrong commands. Enter help to see the available commands and how to use them");
-            return;
+            return "wrong commands. Enter help to see the available commands and how to use them";
         }
 
         if(commands[2].toLowerCase().compareTo("-o") == 0) {
@@ -270,7 +365,7 @@ public class Controller {
         //Get by oid directly
         if(strOID != null){
             snmpGet(ipAddress, community, strOID);
-            return;
+            return "";
         }
 
         if(oid == null)
@@ -279,8 +374,7 @@ public class Controller {
             {
                 if(Character.isLetter(c))
                 {
-                    System.out.println("invalid OID commands");
-                    return;
+                    return "invalid OID commands";
                 }
             }
             oid = new OID(commands[2]);
@@ -295,16 +389,16 @@ public class Controller {
         }
 
         if(getResponse == null || getResponse.getResponse() == null)
-            System.out.println("no response from " + ip.getHostAddress() + "\ntry to use the command \"discovery\" to see all Devices in your network");
+            return "no response from " + ip.getHostAddress() + "\ntry to use the command \"discovery\" to see all Devices in your network";
         else if(getResponse.getResponse().getErrorStatus() != 0)
-            System.out.println("Error: " + getResponse.getResponse().getErrorStatus() );
+            return "Error: " + getResponse.getResponse().getErrorStatus() ;
         else
-            System.out.println("response from " + getResponse.getPeerAddress().toString() + ": " + oid.toString() + " ==> " + getResponse.getResponse().getVariableBindings().iterator().next().getVariable());
+            return "response from " + getResponse.getPeerAddress().toString() + ": " + oid.toString() + " ==> " + getResponse.getResponse().getVariableBindings().iterator().next().getVariable();
     }
 
 
     //set by getting oid from mib
-    public void snmpSet(String ipAddress, String commands[]){
+    public String snmpSet(String ipAddress, String commands[]){
         InetAddress ip;
         int port = 161;
         String community = "private";
@@ -321,7 +415,7 @@ public class Controller {
                         //oid = snmp.getOidFromName(commands[2], "mibFiles\\ExtraMibs\\windows.mib");
                     } catch (MibLoaderException e) {
                         e.printStackTrace();
-                        return;
+                        return "Error while loading MIB";
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -337,8 +431,7 @@ public class Controller {
                 {
                     if(value != null)
                     {
-                        System.out.println("invalidInput: value already initialized");
-                        break;
+                        return "invalidInput: value already initialized";
                     }
                     value = new Integer32(Integer.parseInt(commands[i + 1]));
                 }
@@ -346,21 +439,18 @@ public class Controller {
                 {
                     if(value != null)
                     {
-                        System.out.println("invalidInput: value already initialized");
                         break;
                     }
                     value = new OctetString(commands[i + 1]);
                 }
                 else {
-                    System.out.println("invalid input");
-                    return;
+                    return "invalid input";
                 }
             }
         }
         catch(NullPointerException | UnknownHostException e)
         {
-            System.out.println("wrong input. Enter help to see the available commands and how to use them");
-            return;
+            return "wrong input. Enter help to see the available commands and how to use them";
         }
 
         if(oid == null)
@@ -369,16 +459,14 @@ public class Controller {
             {
                 if(Character.isLetter(c))
                 {
-                    System.out.println("invalid OID input");
-                    return;
+                    return "invalid OID input";
                 }
             }
             oid = new OID(commands[2]);
         }
         if(value == null)
         {
-            System.out.println("value can not be empty, use the command \"help\" to see how to use this command");
-            return;
+            return "value can not be empty, use the command \"help\" to see how to use this command";
         }
 
         IpAddress addre = new UdpAddress(ip, port);
@@ -387,5 +475,6 @@ public class Controller {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return "Successfully Set";
     }
 }
