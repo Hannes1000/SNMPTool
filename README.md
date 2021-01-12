@@ -43,10 +43,14 @@ solen basiert sein)✔
 
 # Working Features
 • SNMP get: get Information from a Device with the IP-Address, the OID or with a MIB-File
+
 • SNMP set: set the Information of a Device with the IP-Address, the OID or with a MIB-File
+
 • SNMP Discover: searchs the whole Network for Devices which support SNMP
+
 • SNMP MIB: output/read MIB-Files
 
 # Future Steps
 • Creating a Jar with that supports MIB
+
 • Creating a Installer to simplify the Installation
