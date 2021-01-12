@@ -30,7 +30,7 @@ blic und private als String verwenden✔
 # Zusatz Anforderungen
 • Von einer bestimmten IP-Adresse mittels MIB Informationen auslesen✔
 
-• Traps oder Informs empfangen und ausgeben✔
+• Traps oder Informs empfangen und ausgeben
 
 • Ein ganzes Netzwerk per SNMP scannen✔
 
