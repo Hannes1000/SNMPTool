@@ -1,0 +1,3288 @@
+-- Changes to rfc1907 - SNMPv2-MIB (object for SNMPv2 protocol)
+--      NOTE: the following should be in a group -
+--            snmpTrapEnterprise, snmpTrapOID, and
+--            warmStart!
+-- dperkins@scruznet.com
+
+MIKROTIK-MIB-General DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    TimeTicks, Counter32, snmpModules, mib-2
+        FROM SNMPv2-SMI
+    DisplayString, TestAndIncr, TimeStamp
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF;
+
+
+snmpMIB MODULE-IDENTITY
+    LAST-UPDATED "9511090000Z"
+    ORGANIZATION "IETF SNMPv2 Working Group"
+    CONTACT-INFO
+            "        Marshall T. Rose
+
+             Postal: Dover Beach Consulting, Inc.
+                     420 Whisman Court
+                     Mountain View, CA  94043-2186
+                     US
+
+                Tel: +1 415 968 1052
+
+             E-mail: mrose@dbc.mtview.ca.us"
+    DESCRIPTION
+            "The MIB module for SNMPv2 entities."
+    REVISION      "9304010000Z"
+    DESCRIPTION
+            "The initial revision of this MIB module was published as
+            RFC 1450."
+    ::= { snmpModules 1 }
+
+
+snmpMIBObjects OBJECT IDENTIFIER ::= { snmpMIB 1 }
+
+--  ::= { snmpMIBObjects 1 }        this OID is obsolete
+--  ::= { snmpMIBObjects 2 }        this OID is obsolete
+--  ::= { snmpMIBObjects 3 }        this OID is obsolete
+
+
+-- the System group
+--
+-- a collection of objects common to all managed systems.
+
+system   OBJECT IDENTIFIER ::= { mib-2 1 }
+
+sysDescr OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "A textual description of the entity.  This value should
+            include the full name and version identification of the
+            system's hardware type, software operating-system, and
+            networking software."
+    ::= { system 1 }
+
+sysObjectID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The vendor's authoritative identification of the network
+            management subsystem contained in the entity.  This value is
+            allocated within the SMI enterprises subtree (1.3.6.1.4.1)
+            and provides an easy and unambiguous means for determining
+            `what kind of box' is being managed.  For example, if vendor
+            `Flintstones, Inc.' was assigned the subtree
+            1.3.6.1.4.1.4242, it could assign the identifier
+            1.3.6.1.4.1.4242.1.1 to its `Fred Router'."
+    ::= { system 2 }
+
+sysUpTime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The time (in hundredths of a second) since the network
+            management portion of the system was last re-initialized."
+    ::= { system 3 }
+
+sysContact OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The textual identification of the contact person for this
+            managed node, together with information on how to contact
+            this person.  If no contact information is known, the value
+            is the zero-length string."
+    ::= { system 4 }
+
+sysName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "An administratively-assigned name for this managed node.
+            By convention, this is the node's fully-qualified domain
+            name.  If the name is unknown, the value is the zero-length
+            string."
+    ::= { system 5 }
+
+sysLocation OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The physical location of this node (e.g., `telephone
+            closet, 3rd floor').  If the location is unknown, the value
+            is the zero-length string."
+    ::= { system 6 }
+
+sysServices OBJECT-TYPE
+    SYNTAX      INTEGER (0..127)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "A value which indicates the set of services that this
+            entity may potentially offers.  The value is a sum.  This
+            sum initially takes the value zero, Then, for each layer, L,
+            in the range 1 through 7, that this node performs
+            transactions for, 2 raised to (L - 1) is added to the sum.
+            For example, a node which performs only routing functions
+            would have a value of 4 (2^(3-1)).  In contrast, a node
+            which is a host offering application services would have a
+            value of 72 (2^(4-1) + 2^(7-1)).  Note that in the context
+            of the Internet suite of protocols, values should be
+            calculated accordingly:
+
+                 layer      functionality
+                   1        physical (e.g., repeaters)
+                   2        datalink/subnetwork (e.g., bridges)
+                   3        internet (e.g., supports the IP)
+                   4        end-to-end  (e.g., supports the TCP)
+                   7        applications (e.g., supports the SMTP)
+
+            For systems including OSI protocols, layers 5 and 6 may also
+            be counted."
+    ::= { system 7 }
+
+
+-- object resource information
+--
+-- a collection of objects which describe the SNMPv2 entity's
+-- (statically and dynamically configurable) support of
+-- various MIB modules.
+
+sysORLastChange OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime at the time of the most recent
+            change in state or value of any instance of sysORID."
+    ::= { system 8 }
+
+sysORTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF SysOREntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table listing the capabilities of the
+            local SNMPv2 entity acting in an agent role with respect to
+            various MIB modules.  SNMPv2 entities having dynamically-
+            configurable support of MIB modules will have a
+            dynamically-varying number of conceptual rows."
+    ::= { system 9 }
+
+sysOREntry OBJECT-TYPE
+    SYNTAX     SysOREntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) in the sysORTable."
+    INDEX      { sysORIndex }
+    ::= { sysORTable 1 }
+
+SysOREntry ::= SEQUENCE {
+    sysORIndex     INTEGER,
+    sysORID        OBJECT IDENTIFIER,
+    sysORDescr     DisplayString,
+    sysORUpTime    TimeStamp
+}
+
+sysORIndex OBJECT-TYPE
+    SYNTAX     INTEGER (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The auxiliary variable used for identifying instances of
+            the columnar objects in the sysORTable."
+    ::= { sysOREntry 1 }
+
+sysORID OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "An authoritative identification of a capabilities statement
+            with respect to various MIB modules supported by the local
+            SNMPv2 entity acting in an agent role."
+    ::= { sysOREntry 2 }
+
+sysORDescr OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "A textual description of the capabilities identified by the
+            corresponding instance of sysORID."
+    ::= { sysOREntry 3 }
+
+sysORUpTime OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime at the time this conceptual row was
+            last instanciated."
+    ::= { sysOREntry 4 }
+
+
+-- the SNMP group
+--
+-- a collection of objects providing basic instrumentation and
+-- control of an SNMP entity.
+
+snmp     OBJECT IDENTIFIER ::= { mib-2 11 }
+
+snmpInPkts OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of messages delivered to the SNMP entity
+            from the transport service."
+    ::= { snmp 1 }
+
+snmpInBadVersions OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of SNMP messages which were delivered to
+            the SNMP entity and were for an unsupported SNMP version."
+    ::= { snmp 3 }
+
+snmpInBadCommunityNames OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of SNMP messages delivered to the SNMP
+            entity which used a SNMP community name not known to said
+            entity."
+    ::= { snmp 4 }
+
+snmpInBadCommunityUses OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of SNMP messages delivered to the SNMP
+            entity which represented an SNMP operation which was not
+            allowed by the SNMP community named in the message."
+    ::= { snmp 5 }
+
+snmpInASNParseErrs OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of ASN.1 or BER errors encountered by the
+            SNMP entity when decoding received SNMP messages."
+    ::= { snmp 6 }
+
+snmpEnableAuthenTraps OBJECT-TYPE
+    SYNTAX      INTEGER { enabled(1), disabled(2) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Indicates whether the SNMP entity is permitted to generate
+            authenticationFailure traps.  The value of this object
+            overrides any configuration information; as such, it
+            provides a means whereby all authenticationFailure traps may
+            be disabled.
+
+            Note that it is strongly recommended that this object be
+            stored in non-volatile memory so that it remains constant
+            across re-initializations of the network management system."
+    ::= { snmp 30 }
+
+snmpSilentDrops OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of GetRequest-PDUs, GetNextRequest-PDUs,
+            GetBulkRequest-PDUs, SetRequest-PDUs, and InformRequest-PDUs
+            delivered to the SNMP entity which were silently dropped
+            because the size of a reply containing an alternate
+            Response-PDU with an empty variable-bindings field was
+            greater than either a local constraint or the maximum
+            message size associated with the originator of the request."
+    ::= { snmp 31 }
+
+snmpProxyDrops OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The total number of GetRequest-PDUs, GetNextRequest-PDUs,
+            GetBulkRequest-PDUs, SetRequest-PDUs, and InformRequest-PDUs
+            delivered to the SNMP entity which were silently dropped
+            because the transmission of the (possibly translated)
+            message to a proxy target failed in a manner (other than a
+            time-out) such that no Response-PDU could be returned."
+    ::= { snmp 32 }
+
+
+-- information for notifications
+--
+-- a collection of objects which allow the SNMPv2 entity, when
+-- acting in an agent role, to be configured to generate
+-- SNMPv2-Trap-PDUs.
+
+snmpTrap       OBJECT IDENTIFIER ::= { snmpMIBObjects 4 }
+
+
+snmpTrapOID OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    MAX-ACCESS accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+            "The authoritative identification of the notification
+            currently being sent.  This variable occurs as the second
+            varbind in every SNMPv2-Trap-PDU and InformRequest-PDU."
+    ::= { snmpTrap 1 }
+
+--  ::= { snmpTrap 2 }   this OID is obsolete
+
+snmpTrapEnterprise OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    MAX-ACCESS accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+            "The authoritative identification of the enterprise
+            associated with the trap currently being sent.  When a
+            SNMPv2 proxy agent is mapping an RFC1157 Trap-PDU into a
+            SNMPv2-Trap-PDU, this variable occurs as the last varbind."
+    ::= { snmpTrap 3 }
+
+--  ::= { snmpTrap 4 }   this OID is obsolete
+
+
+-- well-known traps
+
+snmpTraps      OBJECT IDENTIFIER ::= { snmpMIBObjects 5 }
+
+coldStart NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A coldStart trap signifies that the SNMPv2 entity, acting
+            in an agent role, is reinitializing itself and that its
+            configuration may have been altered."
+    ::= { snmpTraps 1 }
+
+warmStart NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A warmStart trap signifies that the SNMPv2 entity, acting
+            in an agent role, is reinitializing itself such that its
+            configuration is unaltered."
+    ::= { snmpTraps 2 }
+
+-- Note the linkDown NOTIFICATION-TYPE ::= { snmpTraps 3 }
+-- and the linkUp NOTIFICATION-TYPE ::= { snmpTraps 4 }
+-- are defined in RFC 1573
+
+authenticationFailure NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "An authenticationFailure trap signifies that the SNMPv2
+            entity, acting in an agent role, has received a protocol
+            message that is not properly authenticated.  While all
+            implementations of the SNMPv2 must be capable of generating
+            this trap, the snmpEnableAuthenTraps object indicates
+            whether this trap will be generated."
+    ::= { snmpTraps 5 }
+
+-- Note the egpNeighborLoss NOTIFICATION-TYPE ::= { snmpTraps 6 }
+-- is defined in RFC 1213
+
+
+-- the set group
+--
+-- a collection of objects which allow several cooperating
+-- SNMPv2 entities, all acting in a manager role, to
+-- coordinate their use of the SNMPv2 set operation.
+
+snmpSet        OBJECT IDENTIFIER ::= { snmpMIBObjects 6 }
+
+
+snmpSetSerialNo OBJECT-TYPE
+    SYNTAX     TestAndIncr
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "An advisory lock used to allow several cooperating SNMPv2
+            entities, all acting in a manager role, to coordinate their
+            use of the SNMPv2 set operation.
+
+            This object is used for coarse-grain coordination.  To
+            achieve fine-grain coordination, one or more similar objects
+            might be defined within each MIB group, as appropriate."
+    ::= { snmpSet 1 }
+
+
+-- conformance information
+
+snmpMIBConformance
+               OBJECT IDENTIFIER ::= { snmpMIB 2 }
+
+snmpMIBCompliances
+               OBJECT IDENTIFIER ::= { snmpMIBConformance 1 }
+snmpMIBGroups  OBJECT IDENTIFIER ::= { snmpMIBConformance 2 }
+
+
+-- compliance statements
+
+--    ::= { snmpMIBCompliances 1 }      this OID is obsolete
+
+snmpBasicCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for SNMPv2 entities which
+            implement the SNMPv2 MIB."
+    MODULE  -- this module
+        MANDATORY-GROUPS { snmpGroup, snmpSetGroup, systemGroup,
+                           snmpBasicNotificationsGroup }
+
+        GROUP   snmpCommunityGroup
+        DESCRIPTION
+            "This group is mandatory for SNMPv2 entities which
+            support community-based authentication."
+
+    ::= { snmpMIBCompliances 2 }
+
+
+-- units of conformance
+
+--  ::= { snmpMIBGroups 1 }           this OID is obsolete
+--  ::= { snmpMIBGroups 2 }           this OID is obsolete
+--  ::= { snmpMIBGroups 3 }           this OID is obsolete
+--  ::= { snmpMIBGroups 4 }           this OID is obsolete
+
+snmpGroup OBJECT-GROUP
+    OBJECTS { snmpInPkts,
+              snmpInBadVersions,
+              snmpInASNParseErrs,
+              snmpSilentDrops,
+              snmpProxyDrops,
+              snmpEnableAuthenTraps }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing basic instrumentation and
+            control of an SNMPv2 entity."
+    ::= { snmpMIBGroups 8 }
+
+snmpCommunityGroup OBJECT-GROUP
+    OBJECTS { snmpInBadCommunityNames,
+              snmpInBadCommunityUses }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing basic instrumentation of
+            a SNMPv2 entity which supports community-based
+            authentication."
+    ::= { snmpMIBGroups 9 }
+
+snmpSetGroup OBJECT-GROUP
+    OBJECTS { snmpSetSerialNo }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects which allow several cooperating
+            SNMPv2 entities, all acting in a manager role, to coordinate
+            their use of the SNMPv2 set operation."
+    ::= { snmpMIBGroups 5 }
+
+systemGroup OBJECT-GROUP
+    OBJECTS { sysDescr, sysObjectID, sysUpTime,
+              sysContact, sysName, sysLocation,
+              sysServices,
+              sysORLastChange, sysORID,
+              sysORUpTime, sysORDescr }
+    STATUS  current
+    DESCRIPTION
+            "The system group defines objects which are common to all
+            managed systems."
+    ::= { snmpMIBGroups 6 }
+
+snmpBasicNotificationsGroup NOTIFICATION-GROUP
+    NOTIFICATIONS { coldStart, authenticationFailure }
+    STATUS        current
+    DESCRIPTION
+            "The two notifications which an SNMPv2 entity is required to
+            implement."
+    ::= { snmpMIBGroups 7 }
+
+
+-- definitions in RFC 1213 made obsolete by the inclusion of a
+-- subset of the snmp group in this MIB
+
+snmpOutPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Messages which were
+            passed from the SNMP protocol entity to the
+            transport service."
+    ::= { snmp 2 }
+
+-- { snmp 7 } is not used
+
+snmpInTooBigs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP PDUs which were
+            delivered to the SNMP protocol entity and for
+            which the value of the error-status field is
+            `tooBig'."
+    ::= { snmp 8 }
+
+snmpInNoSuchNames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP PDUs which were
+            delivered to the SNMP protocol entity and for
+            which the value of the error-status field is
+            `noSuchName'."
+    ::= { snmp 9 }
+
+snmpInBadValues OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP PDUs which were
+            delivered to the SNMP protocol entity and for
+            which the value of the error-status field is
+            `badValue'."
+    ::= { snmp 10 }
+
+snmpInReadOnlys OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number valid SNMP PDUs which were
+            delivered to the SNMP protocol entity and for
+            which the value of the error-status field is
+            `readOnly'.  It should be noted that it is a
+            protocol error to generate an SNMP PDU which
+            contains the value `readOnly' in the error-status
+            field, as such this object is provided as a means
+            of detecting incorrect implementations of the
+            SNMP."
+    ::= { snmp 11 }
+
+snmpInGenErrs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP PDUs which were
+            delivered to the SNMP protocol entity and for
+            which the value of the error-status field is
+            `genErr'."
+    ::= { snmp 12 }
+
+snmpInTotalReqVars OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of MIB objects which have been
+            retrieved successfully by the SNMP protocol entity
+            as the result of receiving valid SNMP Get-Request
+            and Get-Next PDUs."
+    ::= { snmp 13 }
+
+snmpInTotalSetVars OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of MIB objects which have been
+            altered successfully by the SNMP protocol entity
+            as the result of receiving valid SNMP Set-Request
+            PDUs."
+    ::= { snmp 14 }
+
+snmpInGetRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Get-Request PDUs which
+            have been accepted and processed by the SNMP
+            protocol entity."
+    ::= { snmp 15 }
+
+snmpInGetNexts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Get-Next PDUs which have
+            been accepted and processed by the SNMP protocol
+            entity."
+    ::= { snmp 16 }
+
+snmpInSetRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Set-Request PDUs which
+            have been accepted and processed by the SNMP
+            protocol entity."
+    ::= { snmp 17 }
+
+snmpInGetResponses OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Get-Response PDUs which
+            have been accepted and processed by the SNMP
+            protocol entity."
+    ::= { snmp 18 }
+
+snmpInTraps OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Trap PDUs which have
+            been accepted and processed by the SNMP protocol
+            entity."
+    ::= { snmp 19 }
+
+snmpOutTooBigs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP PDUs which were
+            generated by the SNMP protocol entity and for
+            which the value of the error-status field is
+            `tooBig.'"
+    ::= { snmp 20 }
+
+snmpOutNoSuchNames OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP PDUs which were
+            generated by the SNMP protocol entity and for
+            which the value of the error-status is
+            `noSuchName'."
+    ::= { snmp 21 }
+
+snmpOutBadValues OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP PDUs which were
+            generated by the SNMP protocol entity and for
+            which the value of the error-status field is
+            `badValue'."
+    ::= { snmp 22 }
+
+
+-- { snmp 23 } is not used
+
+snmpOutGenErrs OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP PDUs which were
+            generated by the SNMP protocol entity and for
+            which the value of the error-status field is
+            `genErr'."
+    ::= { snmp 24 }
+
+snmpOutGetRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Get-Request PDUs which
+            have been generated by the SNMP protocol entity."
+    ::= { snmp 25 }
+
+snmpOutGetNexts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Get-Next PDUs which have
+            been generated by the SNMP protocol entity."
+    ::= { snmp 26 }
+
+snmpOutSetRequests OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Set-Request PDUs which
+            have been generated by the SNMP protocol entity."
+    ::= { snmp 27 }
+
+snmpOutGetResponses OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Get-Response PDUs which
+            have been generated by the SNMP protocol entity."
+    ::= { snmp 28 }
+
+snmpOutTraps OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      obsolete
+    DESCRIPTION
+            "The total number of SNMP Trap PDUs which have
+            been generated by the SNMP protocol entity."
+    ::= { snmp 29 }
+
+snmpObsoleteGroup OBJECT-GROUP
+    OBJECTS { snmpOutPkts, snmpInTooBigs, snmpInNoSuchNames,
+              snmpInBadValues, snmpInReadOnlys, snmpInGenErrs,
+              snmpInTotalReqVars, snmpInTotalSetVars,
+              snmpInGetRequests, snmpInGetNexts, snmpInSetRequests,
+              snmpInGetResponses, snmpInTraps, snmpOutTooBigs,
+              snmpOutNoSuchNames, snmpOutBadValues, snmpOutGenErrs,
+              snmpOutGetRequests, snmpOutGetNexts, snmpOutSetRequests,
+              snmpOutGetResponses, snmpOutTraps }
+    STATUS  obsolete
+    DESCRIPTION
+            "A collection of objects from RFC 1213 made obsolete by this
+            MIB."
+    ::= { snmpMIBGroups 10 }
+
+END
+
+MIKROTIK-MIB-Specifics DEFINITIONS ::= BEGIN
+
+IMPORTS
+MODULE-IDENTITY, OBJECT-TYPE, Integer32, Counter32, Gauge32, IpAddress, Counter64, enterprises, NOTIFICATION-TYPE FROM SNMPv2-SMI
+TEXTUAL-CONVENTION, DisplayString, MacAddress, DateAndTime FROM SNMPv2-TC
+TimeTicks FROM SNMPv2-SMI
+OBJECT-GROUP FROM SNMPv2-CONF
+NOTIFICATION-GROUP FROM SNMPv2-CONF;
+
+mikrotikExperimentalModule MODULE-IDENTITY
+  LAST-UPDATED "201507290000Z"
+  ORGANIZATION "MikroTik"
+  CONTACT-INFO "@mikrotik.com"
+  DESCRIPTION ""
+  REVISION "201507290000Z"
+  DESCRIPTION ""
+  ::= { mikrotik 1 }
+
+mikrotik OBJECT IDENTIFIER ::= { enterprises 14988 }
+mtXMetaInfo OBJECT IDENTIFIER ::= { mikrotikExperimentalModule 2 }
+mtXRouterOsGroups OBJECT IDENTIFIER ::= { mtXMetaInfo 1 }
+
+mtXRouterOs OBJECT IDENTIFIER ::= { mikrotikExperimentalModule 1 }
+mtxrWireless OBJECT IDENTIFIER ::= { mtXRouterOs 1 }
+mtxrQueues OBJECT IDENTIFIER ::= { mtXRouterOs 2 }
+mtxrHealth OBJECT IDENTIFIER ::= { mtXRouterOs 3 }
+mtxrLicense OBJECT IDENTIFIER ::= { mtXRouterOs 4 }
+mtxrHotspot OBJECT IDENTIFIER ::= { mtXRouterOs 5 }
+mtxrDHCP OBJECT IDENTIFIER ::= { mtXRouterOs 6 }
+mtxrSystem OBJECT IDENTIFIER ::= { mtXRouterOs 7 }
+mtxrScripts OBJECT IDENTIFIER ::= { mtXRouterOs 8 }
+mtxrTraps OBJECT IDENTIFIER ::= { mtXRouterOs 9 }
+mtxrNstremeDual OBJECT IDENTIFIER ::= { mtXRouterOs 10 }
+mtxrNeighbor OBJECT IDENTIFIER ::= { mtXRouterOs 11 }
+mtxrGps OBJECT IDENTIFIER ::= { mtXRouterOs 12 }
+mtxrWirelessModem OBJECT IDENTIFIER ::= { mtXRouterOs 13 }
+mtxrInterfaceStats OBJECT IDENTIFIER ::= { mtXRouterOs 14 }
+mtxrPOE OBJECT IDENTIFIER ::= { mtXRouterOs 15 }
+mtxrLTEModem OBJECT IDENTIFIER ::= { mtXRouterOs 16 }
+mtxrPartition OBJECT IDENTIFIER ::= { mtXRouterOs 17 }
+
+ObjectIndex ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "x"
+    STATUS current
+    DESCRIPTION "Internal "
+    SYNTAX Integer32 (0..2147483647)
+-- Note that actually in RouterOs index values can be in range 0..4294967294,
+-- this can sometimes make them negative. Any of the following syntaxes would
+-- be more appropriate, but since Integer32 is used for InterfaceIndex in
+-- IF-MIB, where it can also take negative values in RouterOs, it is used
+-- here for consistency.
+-- Also note that ObjectIndex value is not related to item numbers that are
+-- used by console and shown by console print command.
+--
+-- SYNTAX Integer32 (-2147483648..2147483647)
+-- SYNTAX Unsigned32 (0..4294967295)
+
+Voltage ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d-1"
+    STATUS current
+    DESCRIPTION ""
+    SYNTAX Integer32 (-2147483648..2147483647)
+
+Temperature ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d-1"
+    STATUS current
+    DESCRIPTION ""
+    SYNTAX Integer32 (-2147483648..2147483647)
+
+Power ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d-1"
+    STATUS current
+    DESCRIPTION ""
+    SYNTAX Integer32 (-2147483648..2147483647)
+
+BoolValue ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+    "Boolean value."
+    SYNTAX       INTEGER { false(0), true(1) }
+
+-- WIRELESS ********************************************************************
+
+mtxrWlStatTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrWlStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWireless 1 }
+
+mtxrWlStatEntry OBJECT-TYPE
+    SYNTAX MtxrWlStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Wireless station mode interface"
+    INDEX { mtxrWlStatIndex }
+    ::= { mtxrWlStatTable 1 }
+
+MtxrWlStatEntry ::= SEQUENCE {
+    mtxrWlStatIndex ObjectIndex,
+    mtxrWlStatTxRate Gauge32,
+    mtxrWlStatRxRate Gauge32,
+    mtxrWlStatStrength Integer32,
+    mtxrWlStatSsid DisplayString,
+    mtxrWlStatBssid MacAddress,
+    mtxrWlStatFreq Integer32,
+    mtxrWlStatBand DisplayString
+}
+
+mtxrWlStatIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlStatEntry 1 }
+
+mtxrWlStatTxRate OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "bits per second"
+    ::= { mtxrWlStatEntry 2 }
+
+mtxrWlStatRxRate OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "bits per second"
+    ::= { mtxrWlStatEntry 3 }
+
+mtxrWlStatStrength OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "dBm"
+    ::= { mtxrWlStatEntry 4 }
+
+mtxrWlStatSsid OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlStatEntry 5 }
+
+mtxrWlStatBssid OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlStatEntry 6 }
+
+mtxrWlStatFreq OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "megahertz"
+    ::= { mtxrWlStatEntry 7 }
+
+mtxrWlStatBand OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlStatEntry 8 }
+
+mtxrWlRtabTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrWlRtabEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWireless 2 }
+
+mtxrWlRtabEntry OBJECT-TYPE
+    SYNTAX MtxrWlRtabEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Wireless registration table. It is indexed by remote
+        mac-address and local interface index"
+    INDEX { mtxrWlRtabAddr, mtxrWlRtabIface }
+    ::= { mtxrWlRtabTable 1 }
+
+MtxrWlRtabEntry ::= SEQUENCE {
+    mtxrWlRtabAddr MacAddress,
+    mtxrWlRtabIface ObjectIndex,
+    mtxrWlRtabStrength Integer32,
+    mtxrWlRtabTxBytes Counter32,
+    mtxrWlRtabRxBytes Counter32,
+    mtxrWlRtabTxPackets Counter32,
+    mtxrWlRtabRxPackets Counter32,
+    mtxrWlRtabTxRate Gauge32,
+    mtxrWlRtabRxRate Gauge32,
+    mtxrWlRtabRouterOSVersion DisplayString,
+    mtxrWlRtabUptime TimeTicks,
+    mtxrWlRtabSignalToNoise Integer32,
+    mtxrWlRtabTxStrengthCh0 Integer32,
+    mtxrWlRtabRxStrengthCh0 Integer32,
+    mtxrWlRtabTxStrengthCh1 Integer32,
+    mtxrWlRtabRxStrengthCh1 Integer32,
+    mtxrWlRtabTxStrengthCh2 Integer32,
+    mtxrWlRtabRxStrengthCh2 Integer32,
+    mtxrWlRtabTxStrength Integer32
+}
+
+mtxrWlRtabAddr OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 1 }
+
+mtxrWlRtabIface OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 2 }
+
+mtxrWlRtabStrength OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "dBm"
+    ::= { mtxrWlRtabEntry 3 }
+
+mtxrWlRtabTxBytes OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 4 }
+
+mtxrWlRtabRxBytes OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 5 }
+
+mtxrWlRtabTxPackets OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 6 }
+
+mtxrWlRtabRxPackets OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 7 }
+
+mtxrWlRtabTxRate OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "bits per second"
+    ::= { mtxrWlRtabEntry 8 }
+
+mtxrWlRtabRxRate OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "bits per second"
+    ::= { mtxrWlRtabEntry 9 }
+
+mtxrWlRtabRouterOSVersion OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "RouterOS version"
+    ::= { mtxrWlRtabEntry 10 }
+
+mtxrWlRtabUptime OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "uptime"
+    ::= { mtxrWlRtabEntry 11 }
+
+mtxrWlRtabSignalToNoise OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "Measured in dB, if value does not exist it is indicated with 0"
+    ::= { mtxrWlRtabEntry 12 }
+
+mtxrWlRtabTxStrengthCh0 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 13 }
+
+mtxrWlRtabRxStrengthCh0 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 14 }
+
+mtxrWlRtabTxStrengthCh1 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 15 }
+
+mtxrWlRtabRxStrengthCh1 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 16 }
+
+mtxrWlRtabTxStrengthCh2 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 17 }
+
+mtxrWlRtabRxStrengthCh2 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 18 }
+
+mtxrWlRtabTxStrength OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlRtabEntry 19 }
+
+mtxrWlRtabEntryCount OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "Wireless registration table entry count"
+    ::= { mtxrWireless 4 }
+
+mtxrWlApTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrWlApEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWireless 3 }
+
+mtxrWlApEntry OBJECT-TYPE
+    SYNTAX MtxrWlApEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Wireless access point mode interface"
+    INDEX { mtxrWlApIndex }
+    ::= { mtxrWlApTable 1 }
+
+MtxrWlApEntry ::= SEQUENCE {
+    mtxrWlApIndex ObjectIndex,
+    mtxrWlApTxRate Gauge32,
+    mtxrWlApRxRate Gauge32,
+    mtxrWlApSsid DisplayString,
+    mtxrWlApBssid MacAddress,
+    mtxrWlApClientCount Counter32,
+    mtxrWlApFreq Integer32,
+    mtxrWlApBand DisplayString,
+    mtxrWlApNoiseFloor Integer32,
+    mtxrWlApOverallTxCCQ Counter32,
+    mtxrWlApAuthClientCount Counter32
+}
+
+mtxrWlApIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlApEntry 1 }
+
+mtxrWlApTxRate OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "bits per second"
+    ::= { mtxrWlApEntry 2 }
+
+mtxrWlApRxRate OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "bits per second"
+    ::= { mtxrWlApEntry 3 }
+
+mtxrWlApSsid OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlApEntry 4 }
+
+mtxrWlApBssid OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlApEntry 5 }
+
+mtxrWlApClientCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlApEntry 6 }
+
+mtxrWlApFreq OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "megahertz"
+    ::= { mtxrWlApEntry 7 }
+
+mtxrWlApBand OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlApEntry 8 }
+
+mtxrWlApNoiseFloor OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlApEntry 9 }
+
+mtxrWlApOverallTxCCQ OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlApEntry 10 }
+
+mtxrWlApAuthClientCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlApEntry 11 }
+
+mtxrWlCMRtabTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrWlCMRtabEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWireless 5 }
+
+mtxrWlCMRtabEntry OBJECT-TYPE
+    SYNTAX MtxrWlCMRtabEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Wireless CAPSMAN registration table. It is indexed by remote
+        mac-address and local interface index"
+    INDEX { mtxrWlCMRtabAddr, mtxrWlCMRtabIface }
+    ::= { mtxrWlCMRtabTable 1 }
+
+MtxrWlCMRtabEntry ::= SEQUENCE {
+    mtxrWlCMRtabAddr MacAddress,
+    mtxrWlCMRtabIface ObjectIndex,
+    mtxrWlCMRtabUptime TimeTicks,
+    mtxrWlCMRtabTxBytes Counter32,
+    mtxrWlCMRtabRxBytes Counter32,
+    mtxrWlCMRtabTxPackets Counter32,
+    mtxrWlCMRtabRxPackets Counter32,
+    mtxrWlCMRtabTxRate Gauge32,
+    mtxrWlCMRtabRxRate Gauge32,
+    mtxrWlCMRtabTxStrength Integer32,
+    mtxrWlCMRtabRxStrength Integer32
+}
+
+mtxrWlCMRtabAddr OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlCMRtabEntry 1 }
+
+mtxrWlCMRtabIface OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlCMRtabEntry 2 }
+
+mtxrWlCMRtabUptime OBJECT-TYPE
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "uptime"
+    ::= { mtxrWlCMRtabEntry 3 }
+
+mtxrWlCMRtabTxBytes OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlCMRtabEntry 4 }
+
+mtxrWlCMRtabRxBytes OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlCMRtabEntry 5 }
+
+mtxrWlCMRtabTxPackets OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlCMRtabEntry 6 }
+
+mtxrWlCMRtabRxPackets OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlCMRtabEntry 7 }
+
+mtxrWlCMRtabTxRate OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "bits per second"
+    ::= { mtxrWlCMRtabEntry 8 }
+
+mtxrWlCMRtabRxRate OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "bits per second"
+    ::= { mtxrWlCMRtabEntry 9 }
+
+mtxrWlCMRtabTxStrength OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlCMRtabEntry 10 }
+
+mtxrWlCMRtabRxStrength OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrWlCMRtabEntry 11 }
+
+mtxrWlCMRtabEntryCount OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "Wireless CAPSMAN registration table entry count"
+    ::= { mtxrWireless 6 }
+
+-- QUEUES ********************************************************************
+mtxrQueueSimpleTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrQueueSimpleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueues 1 }
+
+mtxrQueueSimpleEntry OBJECT-TYPE
+    SYNTAX MtxrQueueSimpleEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Simple queue"
+    INDEX { mtxrQueueSimpleIndex }
+    ::= { mtxrQueueSimpleTable 1 }
+
+MtxrQueueSimpleEntry ::= SEQUENCE {
+    mtxrQueueSimpleIndex ObjectIndex,
+    mtxrQueueSimpleName DisplayString,
+    mtxrQueueSimpleSrcAddr IpAddress,
+    mtxrQueueSimpleSrcMask IpAddress,
+    mtxrQueueSimpleDstAddr IpAddress,
+    mtxrQueueSimpleDstMask IpAddress,
+    mtxrQueueSimpleIface ObjectIndex,
+    mtxrQueueSimpleBytesIn Counter64,
+    mtxrQueueSimpleBytesOut Counter64,
+    mtxrQueueSimplePacketsIn Counter32,
+    mtxrQueueSimplePacketsOut Counter32,
+    mtxrQueueSimplePCQQueuesIn Counter32,
+    mtxrQueueSimplePCQQueuesOut Counter32,
+    mtxrQueueSimpleDroppedIn Counter32,
+    mtxrQueueSimpleDroppedOut Counter32
+}
+
+mtxrQueueSimpleIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 1 }
+
+mtxrQueueSimpleName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 2 }
+
+mtxrQueueSimpleSrcAddr OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 3 }
+
+mtxrQueueSimpleSrcMask OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 4 }
+
+mtxrQueueSimpleDstAddr OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 5 }
+
+mtxrQueueSimpleDstMask OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 6 }
+
+mtxrQueueSimpleIface OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "interface index"
+    ::= { mtxrQueueSimpleEntry 7 }
+
+mtxrQueueSimpleBytesIn OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 8 }
+
+mtxrQueueSimpleBytesOut OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 9 }
+
+mtxrQueueSimplePacketsIn OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 10 }
+
+mtxrQueueSimplePacketsOut OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 11 }
+
+mtxrQueueSimplePCQQueuesIn OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 12 }
+
+mtxrQueueSimplePCQQueuesOut OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 13 }
+
+mtxrQueueSimpleDroppedIn OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 14 }
+
+mtxrQueueSimpleDroppedOut OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueSimpleEntry 15 }
+
+mtxrQueueTreeTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrQueueTreeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueues 2 }
+
+mtxrQueueTreeEntry OBJECT-TYPE
+    SYNTAX MtxrQueueTreeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Tree queue"
+    INDEX { mtxrQueueTreeIndex }
+    ::= { mtxrQueueTreeTable 1 }
+
+MtxrQueueTreeEntry ::= SEQUENCE {
+    mtxrQueueTreeIndex ObjectIndex,
+    mtxrQueueTreeName DisplayString,
+    mtxrQueueTreeFlow DisplayString,
+    mtxrQueueTreeParentIndex ObjectIndex,
+    mtxrQueueTreeBytes Counter32,
+    mtxrQueueTreePackets Counter32,
+    mtxrQueueTreeHCBytes Counter64,
+    mtxrQueueTreePCQQueues Counter32,
+    mtxrQueueTreeDropped Counter32
+}
+
+mtxrQueueTreeIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueTreeEntry 1 }
+
+mtxrQueueTreeName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueTreeEntry 2 }
+
+mtxrQueueTreeFlow OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "flowmark"
+    ::= { mtxrQueueTreeEntry 3 }
+
+mtxrQueueTreeParentIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "index of parent tree queue or parent interface"
+    ::= { mtxrQueueTreeEntry 4 }
+
+mtxrQueueTreeBytes OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueTreeEntry 5 }
+
+mtxrQueueTreePackets OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueTreeEntry 6 }
+
+mtxrQueueTreeHCBytes OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueTreeEntry 7 }
+
+mtxrQueueTreePCQQueues OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueTreeEntry 8 }
+
+mtxrQueueTreeDropped OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrQueueTreeEntry 9 }
+
+-- HEALTH ********************************************************************
+
+mtxrHlCoreVoltage OBJECT-TYPE
+    SYNTAX Voltage
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "core voltage"
+    ::= { mtxrHealth 1 }
+
+mtxrHlThreeDotThreeVoltage OBJECT-TYPE
+    SYNTAX Voltage
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "3.3V voltage"
+    ::= { mtxrHealth 2 }
+
+mtxrHlFiveVoltage OBJECT-TYPE
+    SYNTAX Voltage
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "5V voltage"
+    ::= { mtxrHealth 3 }
+
+mtxrHlTwelveVoltage OBJECT-TYPE
+    SYNTAX Voltage
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "12V voltage"
+    ::= { mtxrHealth 4 }
+
+mtxrHlSensorTemperature OBJECT-TYPE
+    SYNTAX Temperature
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "temperature at sensor chip"
+    ::= { mtxrHealth 5 }
+
+mtxrHlCpuTemperature OBJECT-TYPE
+    SYNTAX Temperature
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "temperature near cpu"
+    ::= { mtxrHealth 6 }
+
+mtxrHlBoardTemperature OBJECT-TYPE
+    SYNTAX Temperature
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHealth 7 }
+
+mtxrHlVoltage OBJECT-TYPE
+    SYNTAX Voltage
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHealth 8 }
+
+mtxrHlActiveFan OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHealth 9 }
+
+mtxrHlTemperature OBJECT-TYPE
+    SYNTAX Temperature
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHealth 10 }
+
+mtxrHlProcessorTemperature OBJECT-TYPE
+    SYNTAX Temperature
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHealth 11 }
+
+mtxrHlPower OBJECT-TYPE
+    SYNTAX Power
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "Watts"
+    ::= { mtxrHealth 12 }
+
+mtxrHlCurrent OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "mA"
+    ::= { mtxrHealth 13 }
+
+mtxrHlProcessorFrequency OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "Mhz"
+    ::= { mtxrHealth 14 }
+
+mtxrHlPowerSupplyState OBJECT-TYPE
+    SYNTAX BoolValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "PSU state ok"
+    ::= { mtxrHealth 15 }
+
+mtxrHlBackupPowerSupplyState OBJECT-TYPE
+    SYNTAX BoolValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "backup PSU state ok"
+    ::= { mtxrHealth 16 }
+
+mtxrHlFanSpeed1 OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "rpm"
+    ::= { mtxrHealth 17 }
+
+mtxrHlFanSpeed2 OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "rpm"
+    ::= { mtxrHealth 18 }
+
+-- LICENSE ********************************************************************
+
+mtxrLicSoftwareId OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "software id"
+    ::= { mtxrLicense 1 }
+
+mtxrLicUpgrUntil OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "current key allows upgrading until this date"
+    ::= { mtxrLicense 2 }
+
+mtxrLicLevel OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "current key level"
+    ::= { mtxrLicense 3 }
+
+mtxrLicVersion OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "software version"
+    ::= { mtxrLicense 4 }
+
+mtxrLicUpgradableTo OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "upgradable to"
+    ::= { mtxrLicense 5 }
+
+-- ACTIVE USERS ***************************************************************
+
+mtxrHotspotActiveUsersTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrHotspotActiveUsersTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspot 1 }
+
+mtxrHotspotActiveUsersTableEntry OBJECT-TYPE
+    SYNTAX MtxrHotspotActiveUsersTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    INDEX { mtxrHotspotActiveUserIndex }
+    ::= { mtxrHotspotActiveUsersTable 1 }
+
+MtxrHotspotActiveUsersTableEntry ::= SEQUENCE {
+	mtxrHotspotActiveUserIndex ObjectIndex,
+	mtxrHotspotActiveUserServerID Integer32,
+	mtxrHotspotActiveUserName DisplayString,
+	mtxrHotspotActiveUserDomain DisplayString,
+	mtxrHotspotActiveUserIP IpAddress,
+	mtxrHotspotActiveUserMAC MacAddress,
+	mtxrHotspotActiveUserConnectTime Integer32,
+	mtxrHotspotActiveUserValidTillTime Integer32,
+	mtxrHotspotActiveUserIdleStartTime Integer32,
+	mtxrHotspotActiveUserIdleTimeout Integer32,
+	mtxrHotspotActiveUserPingTimeout Integer32,
+	mtxrHotspotActiveUserBytesIn Counter64,
+	mtxrHotspotActiveUserBytesOut Counter64,
+	mtxrHotspotActiveUserPacketsIn Counter64,
+	mtxrHotspotActiveUserPacketsOut Counter64,
+	mtxrHotspotActiveUserLimitBytesIn Counter64,
+	mtxrHotspotActiveUserLimitBytesOut Counter64,
+	mtxrHotspotActiveUserAdvertStatus Integer32,
+	mtxrHotspotActiveUserRadius Integer32,
+	mtxrHotspotActiveUserBlockedByAdvert Integer32
+}
+
+mtxrHotspotActiveUserIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 1 }
+
+mtxrHotspotActiveUserServerID OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 2 }
+
+mtxrHotspotActiveUserName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 3 }
+
+mtxrHotspotActiveUserDomain OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 4 }
+
+mtxrHotspotActiveUserIP OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 5 }
+
+mtxrHotspotActiveUserMAC OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 6 }
+
+mtxrHotspotActiveUserConnectTime OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 7 }
+
+mtxrHotspotActiveUserValidTillTime OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 8 }
+
+mtxrHotspotActiveUserIdleStartTime OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 9 }
+
+mtxrHotspotActiveUserIdleTimeout OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 10 }
+
+mtxrHotspotActiveUserPingTimeout OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 11 }
+
+mtxrHotspotActiveUserBytesIn OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 12 }
+
+mtxrHotspotActiveUserBytesOut OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 13 }
+
+mtxrHotspotActiveUserPacketsIn OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 14 }
+
+mtxrHotspotActiveUserPacketsOut OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 15 }
+
+mtxrHotspotActiveUserLimitBytesIn OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 16 }
+
+mtxrHotspotActiveUserLimitBytesOut OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 17 }
+
+mtxrHotspotActiveUserAdvertStatus OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 18 }
+
+mtxrHotspotActiveUserRadius OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 19 }
+
+mtxrHotspotActiveUserBlockedByAdvert OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrHotspotActiveUsersTableEntry 20 }
+
+mtxrDHCPLeaseCount OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrDHCP 1 }
+
+-- SYSTEM ********************************************************************
+
+mtxrSystemReboot OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION "set non zero to reboot"
+    ::= { mtxrSystem 1 }
+
+mtxrUSBPowerReset OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION "switches off usb power for specified amout of seconds"
+    ::= { mtxrSystem 2 }
+
+mtxrSerialNumber OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "RouterBOARD serial number"
+    ::= { mtxrSystem 3 }
+
+mtxrFirmwareVersion OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "Current firmware version"
+    ::= { mtxrSystem 4 }
+
+mtxrNote OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "note"
+    ::= { mtxrSystem 5 }
+
+mtxrBuildTime OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "build time"
+    ::= { mtxrSystem 6 }
+
+-- SCRIPTS ********************************************************************
+
+mtxrScriptTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrScriptTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrScripts 1 }
+
+mtxrScriptTableEntry OBJECT-TYPE
+    SYNTAX MtxrScriptTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    INDEX { mtxrScriptIndex }
+    ::= { mtxrScriptTable 1 }
+
+MtxrScriptTableEntry ::= SEQUENCE {
+	mtxrScriptIndex ObjectIndex,
+	mtxrScriptName DisplayString,
+	mtxrScriptRunCmd Integer32
+}
+
+mtxrScriptIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrScriptTableEntry 1 }
+
+mtxrScriptName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrScriptTableEntry 2 }
+
+mtxrScriptRunCmd OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION "set non zero to run"
+    ::= { mtxrScriptTableEntry 3 }
+
+-- Dual Nstreme ***************************************************************
+
+mtxrDnStatTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrDnStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrNstremeDual 1 }
+
+mtxrDnStatEntry OBJECT-TYPE
+    SYNTAX MtxrDnStatEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Nstreme Dual interface"
+    INDEX { mtxrDnStatIndex }
+    ::= { mtxrDnStatTable 1 }
+
+MtxrDnStatEntry ::= SEQUENCE {
+    mtxrDnStatIndex ObjectIndex,
+    mtxrDnStatTxRate Gauge32,
+    mtxrDnStatRxRate Gauge32,
+    mtxrDnStatTxStrength Integer32,
+    mtxrDnStatRxStrength Integer32,
+    mtxrDnConnected Integer32
+}	
+
+mtxrDnStatIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrDnStatEntry 1 }
+
+mtxrDnStatTxRate OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "bits per second"
+    ::= { mtxrDnStatEntry 2 }
+
+mtxrDnStatRxRate OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "bits per second"
+    ::= { mtxrDnStatEntry 3 }
+
+mtxrDnStatTxStrength OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "dBm"
+    ::= { mtxrDnStatEntry 4 }
+
+mtxrDnStatRxStrength OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "dBm"
+    ::= { mtxrDnStatEntry 5 }
+
+mtxrDnConnected OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "0 - not connected, connected otherwise"
+    ::= { mtxrDnStatEntry 6 }
+
+-- NEIGHBOR *******************************************************************
+
+mtxrNeighborTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrNeighborTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrNeighbor 1 }
+
+mtxrNeighborTableEntry OBJECT-TYPE
+    SYNTAX MtxrNeighborTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    INDEX { mtxrNeighborIndex }
+    ::= { mtxrNeighborTable 1 }
+
+MtxrNeighborTableEntry ::= SEQUENCE {
+	mtxrNeighborIndex ObjectIndex,
+	mtxrNeighborIpAddress IpAddress,
+	mtxrNeighborMacAddress MacAddress,
+	mtxrNeighborVersion DisplayString,
+	mtxrNeighborPlatform DisplayString,
+	mtxrNeighborIdentity DisplayString,
+	mtxrNeighborSoftwareID DisplayString,
+        mtxrNeighborInterfaceID ObjectIndex
+}
+
+mtxrNeighborIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrNeighborTableEntry 1 }
+
+mtxrNeighborIpAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrNeighborTableEntry 2 }
+
+mtxrNeighborMacAddress OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrNeighborTableEntry 3 }
+
+mtxrNeighborVersion OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrNeighborTableEntry 4 }
+
+mtxrNeighborPlatform OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrNeighborTableEntry 5 }
+
+mtxrNeighborIdentity OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrNeighborTableEntry 6 }
+
+mtxrNeighborSoftwareID OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrNeighborTableEntry 7 }
+
+mtxrNeighborInterfaceID OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrNeighborTableEntry 8 }
+
+-- GROUPS *********************************************************************
+
+mtxrWirelessGroup OBJECT-GROUP OBJECTS {
+        mtxrWlStatTxRate,
+	mtxrWlStatRxRate,
+	mtxrWlStatStrength,
+	mtxrWlStatSsid,
+        mtxrWlStatBssid,
+	mtxrWlStatFreq,
+	mtxrWlStatBand,
+	mtxrWlRtabStrength,
+	mtxrWlRtabTxBytes,
+        mtxrWlRtabRxBytes,
+	mtxrWlRtabTxPackets,
+	mtxrWlRtabRxPackets,
+        mtxrWlRtabTxRate,
+	mtxrWlRtabRxRate,
+	mtxrWlRtabEntryCount,
+        mtxrWlRtabRouterOSVersion,
+        mtxrWlRtabUptime,
+        mtxrWlRtabSignalToNoise,
+        mtxrWlRtabTxStrengthCh0,
+        mtxrWlRtabRxStrengthCh0,
+        mtxrWlRtabTxStrengthCh1,
+        mtxrWlRtabRxStrengthCh1,
+        mtxrWlRtabTxStrengthCh2,
+        mtxrWlRtabRxStrengthCh2,
+        mtxrWlRtabTxStrength,
+        mtxrWlApTxRate,
+	mtxrWlApRxRate,
+	mtxrWlApSsid,
+        mtxrWlApBssid,
+        mtxrWlApClientCount,
+        mtxrWlApBand,
+        mtxrWlApFreq,
+        mtxrWlApNoiseFloor,
+        mtxrWlApOverallTxCCQ,
+        mtxrWlApAuthClientCount,
+        mtxrWlCMRtabTxBytes,
+        mtxrWlCMRtabRxBytes,
+        mtxrWlCMRtabTxPackets,
+        mtxrWlCMRtabRxPackets,
+        mtxrWlCMRtabTxRate,
+        mtxrWlCMRtabRxRate,
+        mtxrWlCMRtabUptime,
+        mtxrWlCMRtabTxStrength,
+        mtxrWlCMRtabRxStrength,
+        mtxrWlCMRtabEntryCount
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 1 }
+
+mtxrQueueGroup OBJECT-GROUP OBJECTS {
+        mtxrQueueSimpleName, mtxrQueueSimpleSrcAddr, mtxrQueueSimpleSrcMask,
+        mtxrQueueSimpleDstAddr, mtxrQueueSimpleDstMask, mtxrQueueSimpleIface,
+        mtxrQueueSimpleBytesIn, mtxrQueueSimpleBytesOut,
+        mtxrQueueSimplePacketsIn, mtxrQueueSimplePacketsOut, mtxrQueueTreeName,
+        mtxrQueueSimplePCQQueuesIn,
+        mtxrQueueSimplePCQQueuesOut,
+        mtxrQueueSimpleDroppedIn,
+        mtxrQueueSimpleDroppedOut,
+        mtxrQueueTreeFlow, mtxrQueueTreeParentIndex, mtxrQueueTreeBytes,
+        mtxrQueueTreePackets,
+        mtxrQueueTreeHCBytes,
+        mtxrQueueTreePCQQueues,
+        mtxrQueueTreeDropped
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 2 }
+
+mtxrHealthGroup OBJECT-GROUP OBJECTS {
+        mtxrHlCoreVoltage, mtxrHlThreeDotThreeVoltage, mtxrHlFiveVoltage,
+        mtxrHlTwelveVoltage, mtxrHlSensorTemperature, mtxrHlCpuTemperature,
+        mtxrHlBoardTemperature, mtxrHlVoltage, mtxrHlActiveFan, 
+	mtxrHlTemperature, mtxrHlProcessorTemperature,
+        mtxrHlCurrent, mtxrHlPower,
+        mtxrHlProcessorFrequency,
+        mtxrHlPowerSupplyState, mtxrHlBackupPowerSupplyState,
+        mtxrHlFanSpeed1, mtxrHlFanSpeed2
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 3 }
+
+mtxrLincenseGroup OBJECT-GROUP OBJECTS {
+        mtxrLicSoftwareId, mtxrLicUpgrUntil, mtxrLicLevel, mtxrLicVersion, mtxrLicUpgradableTo
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 4 }
+
+mtxrHotspotActiveUserGroup OBJECT-GROUP OBJECTS {
+	mtxrHotspotActiveUserServerID,
+	mtxrHotspotActiveUserName,
+	mtxrHotspotActiveUserDomain,
+	mtxrHotspotActiveUserIP,
+	mtxrHotspotActiveUserMAC,
+	mtxrHotspotActiveUserConnectTime,
+	mtxrHotspotActiveUserValidTillTime,
+	mtxrHotspotActiveUserIdleStartTime,
+	mtxrHotspotActiveUserIdleTimeout,
+	mtxrHotspotActiveUserPingTimeout,
+	mtxrHotspotActiveUserBytesIn,
+	mtxrHotspotActiveUserBytesOut,
+	mtxrHotspotActiveUserPacketsIn,
+	mtxrHotspotActiveUserPacketsOut,
+	mtxrHotspotActiveUserLimitBytesIn,
+	mtxrHotspotActiveUserLimitBytesOut,
+	mtxrHotspotActiveUserAdvertStatus,
+	mtxrHotspotActiveUserRadius,
+	mtxrHotspotActiveUserBlockedByAdvert
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 5 }
+
+mtxrScriptGroup OBJECT-GROUP OBJECTS {
+	mtxrScriptName, mtxrScriptRunCmd
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 8 }
+
+mtxrNstremeDualGroup OBJECT-GROUP OBJECTS {
+	mtxrDnStatTxRate, mtxrDnStatRxRate,
+	mtxrDnStatTxStrength, mtxrDnStatRxStrength, mtxrDnConnected
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 10 }
+
+mtxrNeighborGroup OBJECT-GROUP OBJECTS {
+	mtxrNeighborIpAddress,
+	mtxrNeighborMacAddress,
+	mtxrNeighborVersion,
+	mtxrNeighborPlatform,
+	mtxrNeighborIdentity,
+	mtxrNeighborSoftwareID,
+	mtxrNeighborInterfaceID
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 11 }
+
+mtxrDHCPGroup OBJECT-GROUP OBJECTS {
+        mtxrDHCPLeaseCount
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 12 }
+
+mtxrSystemGroup OBJECT-GROUP OBJECTS {
+        mtxrSystemReboot,
+        mtxrUSBPowerReset,
+        mtxrSerialNumber,
+        mtxrFirmwareVersion,
+        mtxrNote,
+        mtxrBuildTime
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 13 }
+
+mtxrTrapGroup NOTIFICATION-GROUP NOTIFICATIONS {
+        mtxrTrap,
+        mtxrTemperatureException
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 14 }
+
+mtxrGPSGroup OBJECT-GROUP OBJECTS {
+        mtxrDate,
+        mtxrLongtitude,
+        mtxrLatitude,
+        mtxrAltitude,
+        mtxrSpeed,
+        mtxrSattelites,
+        mtxrValid
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 15 }
+
+mtxrWirelessModemGroup OBJECT-GROUP OBJECTS {
+        mtxrWirelessModemSignalStrength,
+        mtxrWirelessModemSignalECIO
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 16 }
+
+mtxrInterfaceStatsGroup OBJECT-GROUP OBJECTS {
+        mtxrInterfaceStatsName,
+        mtxrInterfaceStatsDriverRxBytes,
+        mtxrInterfaceStatsDriverRxPackets,
+        mtxrInterfaceStatsDriverTxBytes,
+        mtxrInterfaceStatsDriverTxPackets,
+
+        mtxrInterfaceStatsTxRx64,
+        mtxrInterfaceStatsTxRx65To127,
+        mtxrInterfaceStatsTxRx128To255,
+        mtxrInterfaceStatsTxRx256To511,
+        mtxrInterfaceStatsTxRx512To1023,
+        mtxrInterfaceStatsTxRx1024To1518,
+        mtxrInterfaceStatsTxRx1519ToMax,
+
+        mtxrInterfaceStatsRxBytes,
+        mtxrInterfaceStatsRxPackets,
+        mtxrInterfaceStatsRxTooShort,
+        mtxrInterfaceStatsRx64,
+        mtxrInterfaceStatsRx65To127,
+        mtxrInterfaceStatsRx128To255,
+        mtxrInterfaceStatsRx256To511,
+        mtxrInterfaceStatsRx512To1023,
+        mtxrInterfaceStatsRx1024To1518,
+        mtxrInterfaceStatsRx1519ToMax,
+        mtxrInterfaceStatsRxTooLong,
+        mtxrInterfaceStatsRxBroadcast,
+        mtxrInterfaceStatsRxPause,
+        mtxrInterfaceStatsRxMulticast,
+        mtxrInterfaceStatsRxFCSError,
+        mtxrInterfaceStatsRxAlignError,
+        mtxrInterfaceStatsRxFragment,
+        mtxrInterfaceStatsRxOverflow,
+        mtxrInterfaceStatsRxControl,
+        mtxrInterfaceStatsRxUnknownOp,
+        mtxrInterfaceStatsRxLengthError,
+        mtxrInterfaceStatsRxCodeError,
+        mtxrInterfaceStatsRxCarrierError,
+        mtxrInterfaceStatsRxJabber,
+        mtxrInterfaceStatsRxDrop,
+
+        mtxrInterfaceStatsTxBytes,
+        mtxrInterfaceStatsTxPackets,
+        mtxrInterfaceStatsTxTooShort,
+        mtxrInterfaceStatsTx64,
+        mtxrInterfaceStatsTx65To127,
+        mtxrInterfaceStatsTx128To255,
+        mtxrInterfaceStatsTx256To511,
+        mtxrInterfaceStatsTx512To1023,
+        mtxrInterfaceStatsTx1024To1518,
+        mtxrInterfaceStatsTx1519ToMax,
+        mtxrInterfaceStatsTxTooLong,
+        mtxrInterfaceStatsTxBroadcast,
+        mtxrInterfaceStatsTxPause,
+        mtxrInterfaceStatsTxMulticast,
+        mtxrInterfaceStatsTxUnderrun,
+        mtxrInterfaceStatsTxCollision,
+        mtxrInterfaceStatsTxExcessiveCollision,
+        mtxrInterfaceStatsTxMultipleCollision,
+        mtxrInterfaceStatsTxSingleCollision,
+        mtxrInterfaceStatsTxExcessiveDeferred,
+        mtxrInterfaceStatsTxDeferred,
+        mtxrInterfaceStatsTxLateCollision,
+        mtxrInterfaceStatsTxTotalCollision,
+        mtxrInterfaceStatsTxPauseHonored,
+        mtxrInterfaceStatsTxDrop,
+        mtxrInterfaceStatsTxJabber,
+        mtxrInterfaceStatsTxFCSError,
+        mtxrInterfaceStatsTxControl,
+        mtxrInterfaceStatsTxFragment
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 17 }
+
+mtxrPOEGroup OBJECT-GROUP OBJECTS {
+        mtxrPOEName,
+        mtxrPOEStatus,
+        mtxrPOEVoltage,
+        mtxrPOECurrent,
+        mtxrPOEPower
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 18 }
+
+mtxrLTEModemGroup OBJECT-GROUP OBJECTS {
+        mtxrLTEModemSignalRSRP,
+        mtxrLTEModemSignalRSRQ
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 19 }
+
+-- TRAPS **********************************************************************
+
+mtxrNotifications OBJECT IDENTIFIER ::= { mtxrTraps 0 }
+
+mtxrTrap NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION "Mikrotik trap OID"
+    ::= { mtxrNotifications 1 }
+
+mtxrTemperatureException NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "Mikrotik CPU temperature exception trap"
+    ::= { mtxrNotifications 2 }
+
+-- GPS ************************************************************************
+
+mtxrDate OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "UNIX time"
+    ::= { mtxrGps 1 }
+
+mtxrLongtitude OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "longtitude"
+    ::= { mtxrGps 2 }
+
+mtxrLatitude OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "latitude"
+    ::= { mtxrGps 3 }
+
+mtxrAltitude OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "altitude"
+    ::= { mtxrGps 4 }
+
+mtxrSpeed OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "speed"
+    ::= { mtxrGps 5 }
+
+mtxrSattelites OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "visible sattelite count"
+    ::= { mtxrGps 6 }
+
+mtxrValid OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "is the data valid"
+    ::= { mtxrGps 7 }
+
+-- Wireless Modem ************************************************************
+
+mtxrWirelessModemSignalStrength OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "signal strength in dBm (if first ppp-client modem supports)"
+    ::= { mtxrWirelessModem 1 }
+
+mtxrWirelessModemSignalECIO OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "signal EC/IO in dB (if first ppp-client modem supports)"
+    ::= { mtxrWirelessModem 2 }
+
+-- Interface Stats ************************************************************
+
+mtxrInterfaceStatsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrInterfaceStatsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Extended interface statistics.
+    Some interfaces may have only parts of this table
+    with unavailable values set to zero."
+    ::= { mtxrInterfaceStats 1 }
+
+mtxrInterfaceStatsEntry OBJECT-TYPE
+    SYNTAX MtxrInterfaceStatsEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    INDEX { mtxrInterfaceStatsIndex }
+    ::= { mtxrInterfaceStatsTable 1 }
+
+MtxrInterfaceStatsEntry ::= SEQUENCE {
+    mtxrInterfaceStatsIndex ObjectIndex,
+    mtxrInterfaceStatsName DisplayString,
+
+    mtxrInterfaceStatsDriverRxBytes Counter64,
+    mtxrInterfaceStatsDriverRxPackets Counter64,
+    mtxrInterfaceStatsDriverTxBytes Counter64,
+    mtxrInterfaceStatsDriverTxPackets Counter64,
+
+    mtxrInterfaceStatsTxRx64 Counter64,
+    mtxrInterfaceStatsTxRx65To127 Counter64,
+    mtxrInterfaceStatsTxRx128To255 Counter64,
+    mtxrInterfaceStatsTxRx256To511 Counter64,
+    mtxrInterfaceStatsTxRx512To1023 Counter64,
+    mtxrInterfaceStatsTxRx1024To1518 Counter64,
+    mtxrInterfaceStatsTxRx1519ToMax Counter64,
+
+    mtxrInterfaceStatsRxBytes Counter64,
+    mtxrInterfaceStatsRxPackets Counter64,
+    mtxrInterfaceStatsRxTooShort Counter64,
+    mtxrInterfaceStatsRx64 Counter64,
+    mtxrInterfaceStatsRx65To127 Counter64,
+    mtxrInterfaceStatsRx128To255 Counter64,
+    mtxrInterfaceStatsRx256To511 Counter64,
+    mtxrInterfaceStatsRx512To1023 Counter64,
+    mtxrInterfaceStatsRx1024To1518 Counter64,
+    mtxrInterfaceStatsRx1519ToMax Counter64,
+    mtxrInterfaceStatsRxTooLong Counter64,
+    mtxrInterfaceStatsRxBroadcast Counter64,
+    mtxrInterfaceStatsRxPause Counter64,
+    mtxrInterfaceStatsRxMulticast Counter64,
+    mtxrInterfaceStatsRxFCSError Counter64,
+    mtxrInterfaceStatsRxAlignError Counter64,
+    mtxrInterfaceStatsRxFragment Counter64,
+    mtxrInterfaceStatsRxOverflow Counter64,
+    mtxrInterfaceStatsRxControl Counter64,
+    mtxrInterfaceStatsRxUnknownOp Counter64,
+    mtxrInterfaceStatsRxLengthError Counter64,
+    mtxrInterfaceStatsRxCodeError Counter64,
+    mtxrInterfaceStatsRxCarrierError Counter64,
+    mtxrInterfaceStatsRxJabber Counter64,
+    mtxrInterfaceStatsRxDrop Counter64,
+
+    mtxrInterfaceStatsTxBytes Counter64,
+    mtxrInterfaceStatsTxPackets Counter64,
+    mtxrInterfaceStatsTxTooShort Counter64,
+    mtxrInterfaceStatsTx64 Counter64,
+    mtxrInterfaceStatsTx65To127 Counter64,
+    mtxrInterfaceStatsTx128To255 Counter64,
+    mtxrInterfaceStatsTx256To511 Counter64,
+    mtxrInterfaceStatsTx512To1023 Counter64,
+    mtxrInterfaceStatsTx1024To1518 Counter64,
+    mtxrInterfaceStatsTx1519ToMax Counter64,
+    mtxrInterfaceStatsTxTooLong Counter64,
+    mtxrInterfaceStatsTxBroadcast Counter64,
+    mtxrInterfaceStatsTxPause Counter64,
+    mtxrInterfaceStatsTxMulticast Counter64,
+    mtxrInterfaceStatsTxUnderrun Counter64,
+    mtxrInterfaceStatsTxCollision Counter64,
+    mtxrInterfaceStatsTxExcessiveCollision Counter64,
+    mtxrInterfaceStatsTxMultipleCollision Counter64,
+    mtxrInterfaceStatsTxSingleCollision Counter64,
+    mtxrInterfaceStatsTxExcessiveDeferred Counter64,
+    mtxrInterfaceStatsTxDeferred Counter64,
+    mtxrInterfaceStatsTxLateCollision Counter64,
+    mtxrInterfaceStatsTxTotalCollision Counter64,
+    mtxrInterfaceStatsTxPauseHonored Counter64,
+    mtxrInterfaceStatsTxDrop Counter64,
+    mtxrInterfaceStatsTxJabber Counter64,
+    mtxrInterfaceStatsTxFCSError Counter64,
+    mtxrInterfaceStatsTxControl Counter64,
+    mtxrInterfaceStatsTxFragment Counter64
+}
+
+mtxrInterfaceStatsIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 1 }
+
+mtxrInterfaceStatsName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 2 }
+
+mtxrInterfaceStatsDriverRxBytes OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 11 }
+
+mtxrInterfaceStatsDriverRxPackets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 12 }
+
+mtxrInterfaceStatsDriverTxBytes OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 13 }
+
+mtxrInterfaceStatsDriverTxPackets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 14 }
+
+mtxrInterfaceStatsTxRx64 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 15 }
+
+mtxrInterfaceStatsTxRx65To127 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 16 }
+
+mtxrInterfaceStatsTxRx128To255 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 17 }
+
+mtxrInterfaceStatsTxRx256To511 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 18 }
+
+mtxrInterfaceStatsTxRx512To1023 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 19 }
+
+mtxrInterfaceStatsTxRx1024To1518 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 20 }
+
+mtxrInterfaceStatsTxRx1519ToMax OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 21 }
+
+mtxrInterfaceStatsRxBytes OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 31 }
+ 
+mtxrInterfaceStatsRxPackets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 32 }
+
+mtxrInterfaceStatsRxTooShort OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 33 }
+
+mtxrInterfaceStatsRx64 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 34 }
+
+mtxrInterfaceStatsRx65To127 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 35 }
+
+mtxrInterfaceStatsRx128To255 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 36 }
+
+mtxrInterfaceStatsRx256To511 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 37 }
+
+mtxrInterfaceStatsRx512To1023 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 38 }
+
+mtxrInterfaceStatsRx1024To1518 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 39 }
+
+mtxrInterfaceStatsRx1519ToMax OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 40 }
+
+mtxrInterfaceStatsRxTooLong OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 41 }
+
+mtxrInterfaceStatsRxBroadcast OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 42 }
+
+mtxrInterfaceStatsRxPause OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 43 }
+
+mtxrInterfaceStatsRxMulticast OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 44 }
+
+mtxrInterfaceStatsRxFCSError OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 45 }
+
+mtxrInterfaceStatsRxAlignError OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 46 }
+
+mtxrInterfaceStatsRxFragment OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 47 }
+
+mtxrInterfaceStatsRxOverflow OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 48 }
+
+mtxrInterfaceStatsRxControl OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 49 }
+
+mtxrInterfaceStatsRxUnknownOp OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 50 }
+
+mtxrInterfaceStatsRxLengthError OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 51 }
+
+mtxrInterfaceStatsRxCodeError OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 52 }
+
+mtxrInterfaceStatsRxCarrierError OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 53 }
+
+mtxrInterfaceStatsRxJabber OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 54 }
+
+mtxrInterfaceStatsRxDrop OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 55 }
+
+mtxrInterfaceStatsTxBytes OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 61 }
+
+mtxrInterfaceStatsTxPackets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 62 }
+
+mtxrInterfaceStatsTxTooShort OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 63 }
+
+mtxrInterfaceStatsTx64 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 64 }
+
+mtxrInterfaceStatsTx65To127 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 65 }
+
+mtxrInterfaceStatsTx128To255 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 66 }
+
+mtxrInterfaceStatsTx256To511 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 67 }
+
+mtxrInterfaceStatsTx512To1023 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 68 }
+
+mtxrInterfaceStatsTx1024To1518 OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 69 }
+
+mtxrInterfaceStatsTx1519ToMax OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 70 }
+
+mtxrInterfaceStatsTxTooLong OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 71 }
+
+mtxrInterfaceStatsTxBroadcast OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 72 }
+
+mtxrInterfaceStatsTxPause OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 73 }
+
+mtxrInterfaceStatsTxMulticast OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 74 }
+
+mtxrInterfaceStatsTxUnderrun OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 75 }
+
+mtxrInterfaceStatsTxCollision OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 76 }
+
+mtxrInterfaceStatsTxExcessiveCollision OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 77 }
+
+mtxrInterfaceStatsTxMultipleCollision OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 78 }
+
+mtxrInterfaceStatsTxSingleCollision OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 79 }
+
+mtxrInterfaceStatsTxExcessiveDeferred OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 80 }
+
+mtxrInterfaceStatsTxDeferred OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 81 }
+
+mtxrInterfaceStatsTxLateCollision OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 82 }
+
+mtxrInterfaceStatsTxTotalCollision OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 83 }
+
+mtxrInterfaceStatsTxPauseHonored OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 84 }
+
+mtxrInterfaceStatsTxDrop OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 85 }
+
+mtxrInterfaceStatsTxJabber OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 86 }
+
+mtxrInterfaceStatsTxFCSError OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 87 }
+
+mtxrInterfaceStatsTxControl OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 88 }
+
+mtxrInterfaceStatsTxFragment OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrInterfaceStatsEntry 89 }
+
+-- POE ************************************************************************
+
+mtxrPOETable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrPOEEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Power Over Ethernet"
+    ::= { mtxrPOE 1 }
+
+mtxrPOEEntry OBJECT-TYPE
+    SYNTAX MtxrPOEEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    INDEX { mtxrPOEInterfaceIndex }
+    ::= { mtxrPOETable 1 }
+
+MtxrPOEEntry ::= SEQUENCE {
+    mtxrPOEInterfaceIndex ObjectIndex,
+    mtxrPOEName DisplayString,
+    mtxrPOEStatus Integer32,
+    mtxrPOEVoltage Voltage,
+    mtxrPOECurrent Integer32,
+    mtxrPOEPower Power
+}
+
+mtxrPOEInterfaceIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrPOEEntry 1 }
+
+mtxrPOEName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrPOEEntry 2 }
+
+mtxrPOEStatus OBJECT-TYPE
+    SYNTAX INTEGER {
+        disabled(1),
+        waitingForLoad(2),
+        poweredOn(3),
+        overload(4)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrPOEEntry 3 }
+
+mtxrPOEVoltage OBJECT-TYPE
+    SYNTAX Voltage
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "V"
+    ::= { mtxrPOEEntry 4 }
+
+mtxrPOECurrent OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "mA"
+    ::= { mtxrPOEEntry 5 }
+
+mtxrPOEPower OBJECT-TYPE
+    SYNTAX Power
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "W"
+    ::= { mtxrPOEEntry 6 }
+
+-- LTE Modem ************************************************************
+
+mtxrLTEModemTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrLTEModemEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "LTE Modems"
+    ::= { mtxrLTEModem 1 }
+
+mtxrLTEModemEntry OBJECT-TYPE
+    SYNTAX MtxrLTEModemEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    INDEX { mtxrLTEModemInterfaceIndex }
+    ::= { mtxrLTEModemTable 1 }
+
+MtxrLTEModemEntry ::= SEQUENCE {
+    mtxrLTEModemInterfaceIndex ObjectIndex,
+    mtxrLTEModemSignalRSRP DisplayString,
+    mtxrLTEModemSignalRSRQ Integer32
+}
+
+mtxrLTEModemInterfaceIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrLTEModemEntry 1 }
+
+mtxrLTEModemSignalRSRP OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "dBm"
+    ::= { mtxrLTEModemEntry 2 }
+
+mtxrLTEModemSignalRSRQ OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "dB"
+    ::= { mtxrLTEModemEntry 3 }
+
+-- Partition ************************************************************
+
+mtxrPartitionTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MtxrPartitionEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "LTE Modems"
+    ::= { mtxrPartition 1 }
+
+mtxrPartitionEntry OBJECT-TYPE
+    SYNTAX MtxrPartitionEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    INDEX { mtxrPartitionIndex }
+    ::= { mtxrPartitionTable 1 }
+
+MtxrPartitionEntry ::= SEQUENCE {
+    mtxrPartitionIndex ObjectIndex,
+    mtxrPartitionName DisplayString,
+    mtxrPartitionSize Integer32,
+    mtxrPartitionVersion DisplayString,
+    mtxrPartitionActive BoolValue,
+    mtxrPartitionRunning BoolValue
+}
+
+mtxrPartitionIndex OBJECT-TYPE
+    SYNTAX ObjectIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrPartitionEntry 1 }
+
+mtxrPartitionName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrPartitionEntry 2 }
+
+mtxrPartitionSize OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "MB"
+    ::= { mtxrPartitionEntry 3 }
+
+mtxrPartitionVersion OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrPartitionEntry 4 }
+
+mtxrPartitionActive OBJECT-TYPE
+    SYNTAX BoolValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrPartitionEntry 5 }
+
+mtxrPartitionRunning OBJECT-TYPE
+    SYNTAX BoolValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtxrPartitionEntry 6 }
+
+mtxrPartitionGroup OBJECT-GROUP OBJECTS {
+        mtxrPartitionName,
+        mtxrPartitionSize,
+        mtxrPartitionVersion,
+        mtxrPartitionActive,
+        mtxrPartitionRunning
+    }
+    STATUS current
+    DESCRIPTION ""
+    ::= { mtXRouterOsGroups 20 }
+
+-- ***************************************************************************
+END
+
