@@ -6,7 +6,7 @@ SNMP Tool für System und Netzwerke zum auslesen von Informationen von verschied
 
 # Ausführen des Programmes:
 - am einfachsten ist es das Projekt in IntellijIDEA zu Importieren und Auszuführen
-- ansonsten muss es über die CMD gestarted werden
+- ansonsten muss es über die CMD gestartet werden
 
 # Mindestanforderungen
 • Eine IP-Adresse mittels SNMP abfragen✔
