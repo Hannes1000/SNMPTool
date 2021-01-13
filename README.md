@@ -42,6 +42,6 @@ solen basiert sein)✔
 • SNMP MIB: output/read MIB-Files
 
 # Future Steps
-• Creating a Jar with that supports MIB
+• Creating a Jar-File that supports MIB
 
 • Creating a Installer to simplify the Installation
