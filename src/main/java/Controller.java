@@ -103,6 +103,26 @@ public class Controller {
                 var += " -integer "+allElements.get(7).getText();
         }
 
+        if(active.compareTo("discover") == 0) {
+            if (allElements.get(0).getText().compareTo("") != 0)
+                var += " " + allElements.get(0).getText();
+            if (allElements.get(1).getText().compareTo("") != 0)
+                var += " -v " + allElements.get(1).getText();
+            if (allElements.get(2).getText().compareTo("") != 0)
+                var += " -port " + allElements.get(2).getText();
+            if (allElements.get(3).getText().compareTo("") != 0)
+                var += " -c " + allElements.get(3).getText();
+            if (allElements.get(4).getText().compareTo("") != 0)
+                var += " -s " + allElements.get(4).getText();
+            if (allElements.get(5).getText().compareTo("") != 0)
+                var += " -m " + allElements.get(5).getText();
+        }
+
+        if(active.compareTo("showmib") == 0) {
+            if (allElements.get(0).getText().compareTo("") != 0)
+                var += " " + allElements.get(0).getText();
+        }
+
         System.out.println(var);
         input = var.split(" ");
         handleInput();
@@ -208,6 +228,41 @@ public class Controller {
 
     public void discoverEnter(){
         active = "discover";
+        allElements.clear();
+        displayBox.getChildren().clear();
+        displayBox2.getChildren().clear();
+        TextField ip = new TextField();
+        TextField v = new TextField();
+        TextField p = new TextField();
+        TextField c = new TextField();
+        TextField s = new TextField();
+        TextField i = new TextField();
+
+        ip.setPromptText("IP-Address");
+        ip.setText("");
+        v.setPromptText("Version");
+        v.setText("");
+        p.setPromptText("Port");
+        p.setText("");
+        c.setPromptText("Community");
+        c.setText("");
+        s.setPromptText("Timeout in Seconds");
+        s.setText("");
+        i.setPromptText("Timout in Minutes");
+        i.setText("");
+
+        displayBox.getChildren().add(ip);
+        allElements.add(ip);
+        displayBox.getChildren().add(v);
+        allElements.add(v);
+        displayBox.getChildren().add(p);
+        allElements.add(p);
+        displayBox.getChildren().add(c);
+        allElements.add(c);
+        displayBox2.getChildren().add(s);
+        allElements.add(s);
+        displayBox2.getChildren().add(i);
+        allElements.add(i);
     }
 
     public void mibEnter(){
@@ -260,9 +315,9 @@ public class Controller {
                         for (MibSymbol v : mibSymbols)
                         {
                             if(v instanceof MibValueSymbol)
-                                output += "Name: " + v.getName() + "\t\tValue: " + ((MibValueSymbol)v).getValue();
+                                output += "Name: " + v.getName() + "\t\tValue: " + ((MibValueSymbol)v).getValue() + "\n";
                             else
-                                output += "Name: " + v.getName() + "\t\tValue: NULL";
+                                output += "Name: " + v.getName() + "\t\tValue: NULL\n";
                         }
                     } catch (MibLoaderException | IOException e) {
                         output += "can not find file specified.\nTry to use the command <mib> to show all available mib files";
@@ -272,13 +327,10 @@ public class Controller {
                     output = "Unknown Command:\nType <help> to see all Commands.\n";
                     break;
             }
-            consoletxt.setText(consoletxt.getText() + output);
+            consoletxt.setText(consoletxt.getText() + output + "\n");
             consoleInput.setText("");
         });
     }
-
-
-    //*FXML*//
 
 
     public String snmpDiscover(String[] commands){
