@@ -6,7 +6,7 @@ SNMP Tool für System und Netzwerke zum auslesen von Informationen von verschied
 
 # Ausführen des Programmes:
 - am einfachsten ist es das Projekt in IntellijIDEA zu Importieren und Auszuführen
-- ansonsten muss es über die CMD gestarted werden
+- ansonsten muss es über die CMD gestartet werden
 
 # Mindestanforderungen
 • Eine IP-Adresse mittels SNMP abfragen✔
@@ -25,7 +25,7 @@ blic und private als String verwenden✔
 # Zusatz Anforderungen
 • Von einer bestimmten IP-Adresse mittels MIB Informationen auslesen✔
 
-• Traps oder Informs empfangen und ausgeben
+• Traps oder Informs empfangen und ausgeben✔
 
 • Ein ganzes Netzwerk per SNMP scannen✔
 
@@ -41,7 +41,9 @@ solen basiert sein)✔
 
 • SNMP MIB: output/read MIB-Files
 
+• SNMP Trap: starts automatically an EventHandler that listens for Trap-Messages and outputs them
+
 # Future Steps
-• Creating a Jar with that supports MIB
+• Creating a Jar-File that supports MIB
 
 • Creating a Installer to simplify the Installation
