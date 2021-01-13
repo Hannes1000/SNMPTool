@@ -287,7 +287,8 @@ public class Controller {
             String output = "";
             switch (input[0]) {
                 case "help":
-                    output = "All Commands:\n";
+                    output = "\n";
+                    output += "All Commands:\n";
                     for (int i = 0; i < commands.length; i++) {
                         for (int j = 0; j < commands[i].length; j++) {
                             output += commands[i][j];
@@ -295,21 +296,26 @@ public class Controller {
                     }
                     break;
                 case "get":
+                    output = "\n";
                     output += snmpGet(input[1], input);
                     break;
                 case "set":
+                    output = "\n";
                     output += snmpSet(input[1], input);
                     break;
                 case "discover":
+                    output = "Discovering...\n";
                     output += snmpDiscover(input);
                     break;
                 case "mib":
+                    output = "\n";
                     int i=0;
                     String[] tmp = snmpController.getMibFileNames();
                     for(String str: tmp)
                         output += i++ + ")\t" + str + "\n";
                     break;
                 case "showmib":
+                    output = "\n";
                     try {
                         MibSymbol[] mibSymbols= snmpController.getMibSymbols(input[1]);
                         for (MibSymbol v : mibSymbols)
@@ -333,7 +339,7 @@ public class Controller {
     }
 
 
-    public String snmpDiscover(String[] commands){
+    public synchronized String snmpDiscover(String[] commands){
         int version = SnmpConstants.version1;
         int port = 161;
         String community = "public";
@@ -383,7 +389,7 @@ public class Controller {
             {
                 ResponseEvent getResponse = snmpController.getResponse(tmp.toInt());
                 if(getResponse != null) {
-                    consoletxt.setText(consoletxt.getText() + "discovered " + getResponse.getPeerAddress().toString() + ": " + getResponse.getResponse().getVariableBindings().iterator().next().getVariable());
+                    consoletxt.setText(consoletxt.getText() + "discovered " + getResponse.getPeerAddress().toString() + ": " + getResponse.getResponse().getVariableBindings().iterator().next().getVariable() + "\n");
                     System.out.println("discovered " + getResponse.getPeerAddress().toString() + ": " + getResponse.getResponse().getVariableBindings().iterator().next().getVariable());
                 }
             }
