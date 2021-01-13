@@ -25,7 +25,7 @@ blic und private als String verwenden✔
 # Zusatz Anforderungen
 • Von einer bestimmten IP-Adresse mittels MIB Informationen auslesen✔
 
-• Traps oder Informs empfangen und ausgeben
+• Traps oder Informs empfangen und ausgeben✔
 
 • Ein ganzes Netzwerk per SNMP scannen✔
 
@@ -40,6 +40,8 @@ solen basiert sein)✔
 • SNMP Discover: searchs the whole Network for Devices which support SNMP
 
 • SNMP MIB: output/read MIB-Files
+
+• SNMP Trap: starts automatically an EventHandler that listens for Trap-Messages and outputs them
 
 # Future Steps
 • Creating a Jar-File that supports MIB
