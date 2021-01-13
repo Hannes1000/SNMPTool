@@ -3,6 +3,7 @@ package main.java;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import net.percederberg.mibble.MibLoaderException;
 import net.percederberg.mibble.MibSymbol;
 import net.percederberg.mibble.MibValueSymbol;
@@ -41,7 +42,7 @@ public class Controller {
     String[][] commands = {
             {"\nhelp"},
             {"\n\nget", "\t\t<IP-Address>", "\t<OID-Name>", "\n\t\t\t\t-v <Set Version> \n\t\t\t\t-port <Set Port> \n\t\t\t\t-c <Set Community> \n\t\t\t\t-n <Mib-File>"},
-            {"\n\nset", "\t\t<IP-Address>", "\t<OID-Name>", "\n\t\t\t\t-v <Set Version> \n\t\t\t\t-port <Set Port> \n\t\t\t\t-c <Set Community> \n\t\t\t\t-string <Set Value> \n\t\t\t\t-integer <Set Value>"},
+            {"\n\nset", "\t\t<IP-Address>", "\t<OID-Name>", "\n\t\t\t\t-v <Set Version> \n\t\t\t\t-port <Set Port> \n\t\t\t\t-c <Set Community> \n\t\t\t\t-n <Mib-File> \n\t\t\t\t-string <Set Value> \n\t\t\t\t-integer <Set Value>"},
             {"\n\ndiscover", "\t<IP-Address>", "\n\t\t\t\t-v <Set Version> \n\t\t\t\t-port <Set Port> \n\t\t\t\t-c <Set Community> \n\t\t\t\t-m <Timeout in Min> \n\t\t\t\t-s <Timeout in Sek>"},
             {"\n\nmib"},
             {"\n\nshowmib", "\t\t<Name of MIB-File>"}
@@ -52,11 +53,60 @@ public class Controller {
     }
 
     //*FXML*//
+    String active = "";
+    ArrayList<TextField> allElements = new ArrayList<>();
     @FXML
     TextArea consoletxt;
     @FXML
     TextField consoleInput;
+    @FXML
+    HBox displayBox;
+    @FXML
+    HBox displayBox2;
 
+
+    public void boxEnter(){
+        consoletxt.setWrapText(true);
+        String var = "";
+        var += active;
+        if(active.compareTo("get") == 0) {
+            if (allElements.get(0).getText().compareTo("") != 0)
+                var += " " + allElements.get(0).getText();
+            if (allElements.get(1).getText().compareTo("") != 0)
+                var += " " + allElements.get(1).getText();
+            if (allElements.get(2).getText().compareTo("") != 0)
+                var += " -v " + allElements.get(2).getText();
+            if (allElements.get(3).getText().compareTo("") != 0)
+                var += " -port " + allElements.get(3).getText();
+            if (allElements.get(4).getText().compareTo("") != 0)
+                var += " -c " + allElements.get(4).getText();
+            if (allElements.get(5).getText().compareTo("") != 0)
+                var += " -n " + allElements.get(5).getText();
+        }
+
+        if(active.compareTo("set") == 0) {
+            if (allElements.get(0).getText().compareTo("") != 0)
+                var += " " + allElements.get(0).getText();
+            if (allElements.get(1).getText().compareTo("") != 0)
+                var += " " + allElements.get(1).getText();
+            if (allElements.get(2).getText().compareTo("") != 0)
+                var += " -v " + allElements.get(2).getText();
+            if (allElements.get(3).getText().compareTo("") != 0)
+                var += " -port " + allElements.get(3).getText();
+            if (allElements.get(4).getText().compareTo("") != 0)
+                var += " -c " + allElements.get(4).getText();
+            if (allElements.get(5).getText().compareTo("") != 0)
+                var += " -n " + allElements.get(5).getText();
+            if(allElements.get(4).getText().compareTo("") != 0)
+                var += " -string "+allElements.get(6).getText();
+            if(allElements.get(5).getText().compareTo("") != 0)
+                var += " -integer "+allElements.get(7).getText();
+        }
+
+        System.out.println(var);
+        input = var.split(" ");
+        handleInput();
+    }
 
     public void consoleEnter(){
         input = consoleInput.getText().split(" ");
@@ -64,27 +114,116 @@ public class Controller {
     }
 
     public void helpEnter(){
-
+        input = "help".split(" ");
+        handleInput();
     }
 
     public void getEnter(){
+        active = "get";
+        allElements.clear();
+        displayBox.getChildren().clear();
+        displayBox2.getChildren().clear();
+        TextField ip = new TextField();
+        TextField oid = new TextField();
+        TextField v = new TextField();
+        TextField p = new TextField();
+        TextField c = new TextField();
+        TextField m = new TextField();
 
+        ip.setPromptText("IP-Address");
+        ip.setText("");
+        oid.setPromptText("Name of OID");
+        oid.setText("");
+        v.setPromptText("Version");
+        v.setText("");
+        p.setPromptText("Port");
+        p.setText("");
+        c.setPromptText("Community");
+        c.setText("");
+        m.setPromptText("Name of MIB-File");
+        m.setText("");
+
+        displayBox.getChildren().add(ip);
+        allElements.add(ip);
+        displayBox.getChildren().add(oid);
+        allElements.add(oid);
+        displayBox.getChildren().add(v);
+        allElements.add(v);
+        displayBox.getChildren().add(p);
+        allElements.add(p);
+        displayBox2.getChildren().add(c);
+        allElements.add(c);
+        displayBox2.getChildren().add(m);
+        allElements.add(m);
     }
 
     public void setEnter(){
+        active = "set";
+        allElements.clear();
+        displayBox.getChildren().clear();
+        displayBox2.getChildren().clear();
+        TextField ip = new TextField();
+        TextField oid = new TextField();
+        TextField v = new TextField();
+        TextField p = new TextField();
+        TextField c = new TextField();
+        TextField m = new TextField();
+        TextField s = new TextField();
+        TextField i = new TextField();
 
+        ip.setPromptText("IP-Address");
+        ip.setText("");
+        oid.setPromptText("Name of OID");
+        oid.setText("");
+        v.setPromptText("Version");
+        v.setText("");
+        p.setPromptText("Port");
+        p.setText("");
+        c.setPromptText("Community");
+        c.setText("");
+        m.setPromptText("Name of MIB-File");
+        m.setText("");
+        s.setPromptText("String Value");
+        s.setText("");
+        i.setPromptText("Integer Value");
+        i.setText("");
+
+        displayBox.getChildren().add(ip);
+        allElements.add(ip);
+        displayBox.getChildren().add(oid);
+        allElements.add(oid);
+        displayBox.getChildren().add(v);
+        allElements.add(v);
+        displayBox.getChildren().add(p);
+        allElements.add(p);
+        displayBox.getChildren().add(c);
+        allElements.add(c);
+        displayBox2.getChildren().add(m);
+        allElements.add(m);
+        displayBox2.getChildren().add(s);
+        allElements.add(s);
+        displayBox2.getChildren().add(i);
+        allElements.add(i);
     }
 
     public void discoverEnter(){
-
+        active = "discover";
     }
 
     public void mibEnter(){
-
+        active = "mib";
+        input = "mib".split(" ");
+        handleInput();
     }
 
     public void showmibEnter(){
-
+        active = "showmib";
+        allElements.clear();
+        displayBox.getChildren().clear();
+        TextField b = new TextField();
+        b.setPromptText("Name of MIB-File");
+        displayBox.getChildren().add(b);
+        allElements.add(b);
     }
 
     public void handleInput(){
@@ -113,7 +252,7 @@ public class Controller {
                     int i=0;
                     String[] tmp = snmpController.getMibFileNames();
                     for(String str: tmp)
-                        output += i++ + ")\t" + str;
+                        output += i++ + ")\t" + str + "\n";
                     break;
                 case "showmib":
                     try {
@@ -140,64 +279,6 @@ public class Controller {
 
 
     //*FXML*//
-
-
-
-
-    public void startProgrammLoop() throws IOException {
-        Scanner scanner = new Scanner(System.in);
-        String output = "";
-
-        System.out.println("SNMP Program started:\n" +
-                "Enter <help> to get all Commands.\n");
-        while (programmrunning) {
-            input = scanner.nextLine().split(" ");
-
-            switch (input[0]) {
-                case "help":
-                    output = "All Commands:\n";
-                    for (int i = 0; i < commands.length; i++) {
-                        for (int j = 0; j < commands[i].length; j++) {
-                            output += commands[i][j];
-                        }
-                    }
-                    break;
-                case "get":
-                    snmpGet(input[1], input);
-                    break;
-                case "set":
-                    snmpSet(input[1], input);
-                    break;
-                case "discover":
-                    snmpDiscover(input);
-                    break;
-                case "mib":
-                    int i=0;
-                    String[] tmp = snmpController.getMibFileNames();
-                    for(String str: tmp)
-                        System.out.println(i++ + ")\t" + str);
-                    break;
-                case "showmib":
-                    try {
-                        MibSymbol[] mibSymbols= snmpController.getMibSymbols(input[1]);
-                        for (MibSymbol v : mibSymbols)
-                        {
-                            if(v instanceof MibValueSymbol)
-                                System.out.println("Name: " + v.getName() + "\t\tValue: " + ((MibValueSymbol)v).getValue());
-                            else
-                                System.out.println("Name: " + v.getName() + "\t\tValue: NULL");
-                        }
-                    } catch (MibLoaderException | IOException e) {
-                        System.out.println("can not find file specified.\nTry to use the command <mib> to show all available mib files");
-                    }
-                    break;
-                default:
-                    output = "Unknown Command:\nType <help> to see all Commands.\n";
-                    break;
-            }
-            System.out.println(output);
-        }
-    }
 
 
     public String snmpDiscover(String[] commands){

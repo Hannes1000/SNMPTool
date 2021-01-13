@@ -9,27 +9,27 @@
       <Label alignment="CENTER" layoutX="201.0" layoutY="234.0" prefHeight="17.0" prefWidth="200.0" text="Console" textAlignment="CENTER" />
       <MenuBar layoutY="2.0" prefHeight="25.0" prefWidth="600.0">
         <menus>
-          <Menu mnemonicParsing="false" onAction="#helpEnter" text="Help">
+          <Menu mnemonicParsing="false" onAction="#helpEnter" onMenuValidation="#helpEnter" text="Help">
                <items>
                   <Menu mnemonicParsing="false" text="Lists All Commands" />
                </items></Menu>
-          <Menu mnemonicParsing="false" onAction="#getEnter" text="Get">
+          <Menu mnemonicParsing="false" onAction="#getEnter" onMenuValidation="#getEnter" text="Get">
                <items>
                   <MenuItem mnemonicParsing="false" text="Unspecified Action" />
                </items></Menu>
-          <Menu mnemonicParsing="false" onAction="#setEnter" text="Set">
+          <Menu mnemonicParsing="false" onAction="#setEnter" onMenuValidation="#setEnter" text="Set">
                <items>
                   <MenuItem mnemonicParsing="false" text="Set Value with OID" />
                </items></Menu>
-            <Menu mnemonicParsing="false" onAction="#discoverEnter" text="Discover">
+            <Menu mnemonicParsing="false" onAction="#discoverEnter" onMenuValidation="#discoverEnter" text="Discover">
                <items>
                   <MenuItem mnemonicParsing="false" text="Scanns your whole Network" />
                </items></Menu>
-            <Menu mnemonicParsing="false" onAction="#mibEnter" text="Mib">
+            <Menu mnemonicParsing="false" onAction="#mibEnter" onMenuValidation="#mibEnter" text="Mib">
                <items>
                   <MenuItem mnemonicParsing="false" text="Returns all available MIB-Files" />
                </items></Menu>
-            <Menu mnemonicParsing="false" onAction="#showmibEnter" text="Showmib">
+            <Menu mnemonicParsing="false" onAction="#showmibEnter" onMenuValidation="#showmibEnter" text="Showmib">
                <items>
                   <MenuItem mnemonicParsing="false" text="Outputs a MIB-File" />
                </items></Menu>
@@ -37,6 +37,8 @@
       </MenuBar>
       <TextField fx:id="consoleInput" layoutY="444.0" prefHeight="36.0" prefWidth="526.0" />
       <Button layoutX="526.0" layoutY="444.0" mnemonicParsing="false" onAction="#consoleEnter" prefHeight="36.0" prefWidth="87.0" text="Enter" />
-      <HBox layoutX="10.0" layoutY="64.0" prefHeight="127.0" prefWidth="583.0" />
+      <HBox fx:id="displayBox" layoutX="10.0" layoutY="64.0" prefHeight="64.0" prefWidth="583.0" />
+      <Button layoutX="525.0" layoutY="191.0" mnemonicParsing="false" onAction="#boxEnter" prefHeight="36.0" prefWidth="87.0" text="Enter" />
+      <HBox fx:id="displayBox2" layoutX="15.0" layoutY="128.0" prefHeight="64.0" prefWidth="583.0" />
    </children>
 </AnchorPane>
